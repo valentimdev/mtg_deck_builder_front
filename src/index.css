@@ -37,7 +37,14 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-
+html,
+body,
+#root { 
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
 a {
   font-weight: 500;
   color: var(--color-primary); 
@@ -50,10 +57,7 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
-  min-height: 100vh;
 }
 
 h1 {
