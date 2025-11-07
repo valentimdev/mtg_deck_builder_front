@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react';
-import type { ScryfallCard } from '../services/scryfall';
 import { scryfallService } from '../services/scryfall';
+import type { DeckItem, DeckContextValue } from '../types/deck';
 
-export type DeckItem = {
-  quantity: number;
-  card: ScryfallCard | null;
-  cardName: string;
-  loading: boolean;
-  error: string | null;
-};
+export { type DeckItem } from '../types/deck';
 
-export function useDeck() {
+export function useDeck(): DeckContextValue {
   const [deckItems, setDeckItems] = useState<DeckItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,12 +51,10 @@ export function useDeck() {
 
       setDeckItems(initialDeckItems);
 
-      // Faz fetch das cartas uma por uma
       for (let i = 0; i < initialDeckItems.length; i++) {
         const item = initialDeckItems[i];
 
         try {
-          // Delay pequeno para respeitar rate limit da API
           if (i > 0) {
             await new Promise((resolve) => setTimeout(resolve, 150));
           }
@@ -121,7 +113,6 @@ export function useDeck() {
 
     setDeckItems((prev) => [...prev, newItem]);
 
-    // Fetch da nova carta
     scryfallService
       .getCardByName(cardName)
       .then((card) => {
@@ -152,26 +143,26 @@ export function useDeck() {
       });
   };
 
-  const getTotalCards = () => {
-    return deckItems.reduce((total, item) => total + item.quantity, 0);
-  };
-
-  const getLoadedCards = () => {
-    return deckItems.filter((item) => item.card !== null);
-  };
+  // Calcula total de cartas
+  const totalCards = deckItems.reduce(
+    (total, item) => total + item.quantity,
+    0
+  );
 
   useEffect(() => {
     loadDeckFromTxt();
   }, []);
 
   return {
+    // Estado
     deckItems,
     loading,
     error,
+    totalCards,
+    // Ações
     loadDeckFromTxt,
     removeDeckItem,
     addDeckItem,
-    getTotalCards,
-    getLoadedCards,
+    reloadDeck: loadDeckFromTxt, // Alias para compatibilidade
   };
 }

@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import { useDeck } from '../hooks/useDeck';
+import type { DeckItem } from '../types/deck';
 
-function DeckList() {
-  const {
-    deckItems,
-    loading: deckLoading,
-    error: deckError,
-    removeDeckItem,
-    getTotalCards,
-  } = useDeck();
+interface DeckListProps {
+  deckItems: DeckItem[];
+  loading: boolean;
+  error: string | null;
+  totalCards: number;
+  removeDeckItem: (index: number) => void;
+}
 
+function DeckList({
+  deckItems,
+  loading: deckLoading,
+  error: deckError,
+  totalCards,
+  removeDeckItem,
+}: DeckListProps) {
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePosition({ x: e.clientX, y: e.clientY });
   };
-
-  const totalCards = getTotalCards();
 
   if (deckLoading) {
     return (

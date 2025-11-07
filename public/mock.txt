@@ -1,5 +1,6 @@
 1 Orzhov Basilica
-2 Scoured Barrens
+1 Smothering Tithe
+1 Scoured Barrens
 1 Labyrinth of Skophos
 1 Neglected Manor
 12 Swamp
