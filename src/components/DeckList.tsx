@@ -1,39 +1,52 @@
-import React, { useState, useEffect } from 'react';
-import mockCard from '../data/mock.json';
-
-type Card = {
-  id: string;
-  name: string;
-  oracle_text?: string;
-  image_uris?: {
-    normal: string;
-  };
-};
-
-type DeckItem = {
-  card: Card;
-  quantity: number;
-};
+import React, { useState } from 'react';
+import { useDeck } from '../hooks/useDeck';
 
 function DeckList() {
-  const [cards, setCards] = useState<DeckItem[]>([]);
+  const {
+    deckItems,
+    loading: deckLoading,
+    error: deckError,
+    removeDeckItem,
+    getTotalCards,
+  } = useDeck();
+
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const deckData: DeckItem[] = [{ card: mockCard as Card, quantity: 1 }];
-    setCards(deckData);
-  }, []);
-
-  const handleRemove = (card: Card) => {
-    setCards((prev) => prev.filter((item) => item.card.id !== card.id));
-  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePosition({ x: e.clientX, y: e.clientY });
   };
 
-  const totalCards = cards.reduce((acc, item) => acc + item.quantity, 0);
+  const totalCards = getTotalCards();
+
+  if (deckLoading) {
+    return (
+      <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6">
+        <h2 className="text-2xl font-bold text-[#b896ff] mb-4 shrink-0">
+          Carregando Deck...
+        </h2>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b896ff] mx-auto"></div>
+            <p className="mt-4 text-gray-400">Buscando cartas...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (deckError) {
+    return (
+      <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6">
+        <h2 className="text-2xl font-bold text-red-500 mb-4 shrink-0">
+          Erro ao Carregar Deck
+        </h2>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-red-400 text-center">{deckError}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6">
@@ -43,31 +56,45 @@ function DeckList() {
 
       <div className="flex-1 overflow-y-auto overflow-x-visible">
         <ul className="space-y-3">
-          {cards.map((deckItem) => (
+          {deckItems.map((deckItem, index) => (
             <li
-              key={deckItem.card.id}
+              key={`${deckItem.cardName}-${index}`}
               className="relative flex justify-between items-center p-3 bg-[#3a3b3f] rounded-lg border border-gray-500 cursor-pointer overflow-visible"
               onMouseEnter={() => {
-                console.log('Hover entered:', deckItem.card.name);
-                setHoveredCardId(deckItem.card.id);
+                if (deckItem.card?.id) {
+                  setHoveredCardId(deckItem.card.id);
+                }
               }}
               onMouseLeave={() => {
-                console.log('Hover left:', deckItem.card.name);
                 setHoveredCardId(null);
               }}
               onMouseMove={handleMouseMove}
             >
-              <span>{deckItem.card.name}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[#b896ff] font-bold min-w-8">
+                  {deckItem.quantity}x
+                </span>
+                <span className={deckItem.loading ? 'text-gray-400' : ''}>
+                  {deckItem.cardName}
+                </span>
+                {deckItem.loading && (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#b896ff]"></div>
+                )}
+                {deckItem.error && (
+                  <span className="text-red-400 text-sm">⚠️</span>
+                )}
+              </div>
 
               <button
-                onClick={() => handleRemove(deckItem.card)}
+                onClick={() => removeDeckItem(index)}
                 className="px-2 py-0.5 rounded bg-red-600 hover:bg-red-700 text-lg font-bold"
+                title="Remover carta"
               >
                 &times;
               </button>
 
-              {hoveredCardId === deckItem.card.id &&
-                deckItem.card.image_uris?.normal && (
+              {hoveredCardId === deckItem.card?.id &&
+                deckItem.card?.image_uris?.normal && (
                   <div
                     className="fixed z-50 pointer-events-none"
                     style={{
@@ -80,12 +107,12 @@ function DeckList() {
                       alt={deckItem.card.name}
                       className="w-60 rounded-lg shadow-2xl"
                       onLoad={() =>
-                        console.log('Imagem carregada:', deckItem.card.name)
+                        console.log('Imagem carregada:', deckItem.card?.name)
                       }
                       onError={() =>
                         console.log(
                           'Erro ao carregar imagem:',
-                          deckItem.card.name
+                          deckItem.card?.name
                         )
                       }
                     />
@@ -94,6 +121,12 @@ function DeckList() {
             </li>
           ))}
         </ul>
+
+        {deckItems.length === 0 && (
+          <div className="flex items-center justify-center h-full">
+            <p className="text-gray-400 text-center">Deck vazio</p>
+          </div>
+        )}
       </div>
     </div>
   );

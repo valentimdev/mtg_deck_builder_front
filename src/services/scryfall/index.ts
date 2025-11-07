@@ -1,5 +1,5 @@
 export { scryfallService } from './scryfallService';
-import type {
+export type {
   ScryfallCard,
   ScryfallError,
   ScryfallSearchResponse,
