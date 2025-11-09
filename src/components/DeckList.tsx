@@ -53,7 +53,7 @@ function DeckList({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6">
+    <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6 relative z-10">
       <h2 className="text-2xl font-bold text-[#b896ff] mb-4 shrink-0">
         Meu Deck ({totalCards})
       </h2>
@@ -100,10 +100,11 @@ function DeckList({
               {hoveredCardId === deckItem.card?.id &&
                 deckItem.card?.image_uris?.normal && (
                   <div
-                    className="fixed z-50 pointer-events-none"
+                    className="fixed pointer-events-none"
                     style={{
                       left: mousePosition.x + 10,
                       top: mousePosition.y - 150,
+                      zIndex: 9999,
                     }}
                   >
                     <img
