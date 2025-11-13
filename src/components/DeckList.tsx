@@ -26,12 +26,12 @@ function DeckList({
   if (deckLoading) {
     return (
       <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6">
-        <h2 className="text-2xl font-bold text-[#b896ff] mb-4 shrink-0">
+        <h2 className="text-2xl font-bold text-(--text-dark) mb-4 shrink-0">
           Carregando Deck...
         </h2>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b896ff] mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-(--text-dark) mx-auto"></div>
             <p className="mt-4 text-gray-400">Buscando cartas...</p>
           </div>
         </div>
@@ -53,17 +53,25 @@ function DeckList({
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-6 relative z-10">
-      <h2 className="text-2xl font-bold text-[#b896ff] mb-4 shrink-0">
+    <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-2 relative ">
+      <h2 className="text-2xl font-bold text-(--text-dark) mb-4 shrink-0 self-center">
         Meu Deck ({totalCards})
       </h2>
 
-      <div className="flex-1 overflow-y-auto overflow-x-visible">
-        <ul className="space-y-3">
+      <div className="flex-1 overflow-y-auto overflow-x-visible pr-1 border border-white">
+        <ul className="space-y-2">
           {deckItems.map((deckItem, index) => (
             <li
               key={`${deckItem.cardName}-${index}`}
               className="relative flex justify-between items-center p-3 bg-[#3a3b3f] rounded-lg border border-gray-500 cursor-pointer overflow-visible"
+              style={{
+                backgroundImage: deckItem.card?.image_uris?.art_crop
+                      ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${deckItem.card.image_uris.art_crop})`
+                  : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'top',
+                backgroundRepeat: 'no-repeat',
+              }}
               onMouseEnter={() => {
                 if (deckItem.card?.id) {
                   setHoveredCardId(deckItem.card.id);
@@ -75,14 +83,14 @@ function DeckList({
               onMouseMove={handleMouseMove}
             >
               <div className="flex items-center gap-3">
-                <span className="text-[#b896ff] font-bold min-w-8">
+                <span className="text-(--text-dark) font-bold min-w-8">
                   {deckItem.quantity}x
                 </span>
                 <span className={deckItem.loading ? 'text-gray-400' : ''}>
                   {deckItem.cardName}
                 </span>
                 {deckItem.loading && (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#b896ff]"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-(--text-dark)"></div>
                 )}
                 {deckItem.error && (
                   <span className="text-red-400 text-sm">⚠️</span>

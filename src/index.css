@@ -2,26 +2,25 @@
 
 :root {
 
-  --color-primary: #237795;
-  --color-primary-hover: #2a8bb5;
-  --color-primary-focus: #2f9ecc;
+  --color-primary: #6d28d9;
+  --color-primary-hover: #7c3aed; 
+  --color-primary-focus: #8b5cf6;
 
 
-  --color-secondary: #38bdf8;
-  --color-secondary-hover: #7dd3fc;
-  --color-secondary-focus: #a5e8fe;
+  --color-secondary: #b896ff; 
+  --color-secondary-hover: #c9adff; 
+  --color-secondary-focus: #dbd1ff; 
 
   --color-tertiary: #475569;
   --color-tertiary-hover: #64748b;
   --color-tertiary-focus: #94a3b8;
-
 
   --bg-dark: #202125; 
   --bg-light: #ffffff;
   --button-bg-dark: #1a1a1a;
   --button-bg-light: #f9f9f9;
 
-  --text-dark: rgba(255, 255, 255, 0.87);
+  --text-dark: #b896ff; 
   --text-light: #213547;
   
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -81,7 +80,7 @@ button:hover {
 }
 button:focus,
 button:focus-visible {
-  outline: 4px auto var(--color-primary-focus);
+  outline: 4px auto var(--color-primary-focus); 
 }
 
 
@@ -92,7 +91,7 @@ button:focus-visible {
   }
   
   a:hover {
-    color: #1e637e; 
+    color: #6d28d9; 
   }
   
   button {

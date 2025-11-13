@@ -67,7 +67,7 @@ function SearchBar({ onCardSelect }: SearchBarProps) {
             <input
                 type="text"
                 placeholder="Pesquise cards..."
-                className="border border-gray-500 rounded-md p-3 w-full bg-[#d2d2d2] text-black placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-[#b896ff]"
+                className="border border-gray-500 rounded-md p-3 w-full bg-[#d2d2d2] text-black placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-(--text-dark)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onFocus={() => query.length >= 3 && setShowResults(true)}
@@ -96,7 +96,7 @@ function SearchBar({ onCardSelect }: SearchBarProps) {
                                 <div className="w-10 h-14 bg-gray-700 rounded-md"></div>
                             )}
                             <div className="flex flex-col">
-                                <span className="font-semibold text-[#b896ff]">{card.name}</span>
+                                <span className="font-semibold text-(--text-dark)">{card.name}</span>
                                 <span className="text-xs text-gray-300">{card.type_line}</span>
                                 {card.mana_cost && (
                                     <span className="text-xs text-gray-400">{card.mana_cost}</span>
