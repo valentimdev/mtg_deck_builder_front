@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { DeckItem } from '../types/deck';
+import { useCardDialog } from '@/contexts/CardDialogContext';
 
 interface DeckListProps {
   deckItems: DeckItem[];
@@ -18,7 +19,7 @@ function DeckList({
 }: DeckListProps) {
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
+  const { openCard } = useCardDialog();
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePosition({ x: e.clientX, y: e.clientY });
   };
@@ -66,7 +67,7 @@ function DeckList({
               className="relative flex justify-between items-center p-3 bg-[#3a3b3f] rounded-lg border border-gray-500 cursor-pointer overflow-visible"
               style={{
                 backgroundImage: deckItem.card?.image_uris?.art_crop
-                      ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${deckItem.card.image_uris.art_crop})`
+                  ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${deckItem.card.image_uris.art_crop})`
                   : undefined,
                 backgroundSize: 'cover',
                 backgroundPosition: 'top',
@@ -81,6 +82,11 @@ function DeckList({
                 setHoveredCardId(null);
               }}
               onMouseMove={handleMouseMove}
+              onClick={() => {
+                if (deckItem.card) {
+                  openCard(deckItem.card);
+                }
+              }}
             >
               <div className="flex items-center gap-3">
                 <span className="text-(--text-dark) font-bold min-w-8">
@@ -105,42 +111,42 @@ function DeckList({
                 &times;
               </button>
 
-{hoveredCardId === deckItem.card?.id &&
-    deckItem.card?.image_uris?.normal &&
-    (() => {
-      const cardWidth = 240; 
-      const cardHeight = cardWidth * 1.4;
-      const offset = 10; 
-      const viewportHeight = window.innerHeight;
+              {hoveredCardId === deckItem.card?.id &&
+                deckItem.card?.image_uris?.normal &&
+                (() => {
+                  const cardWidth = 240;
+                  const cardHeight = cardWidth * 1.4;
+                  const offset = 10;
+                  const viewportHeight = window.innerHeight;
 
-      let finalTop = mousePosition.y - cardHeight / 2;
+                  let finalTop = mousePosition.y - cardHeight / 2;
 
-      if (finalTop < offset) {
-        finalTop = offset; 
-      }
-      
-      if (finalTop + cardHeight + offset > viewportHeight) {
-        finalTop = viewportHeight - cardHeight - offset;
-      }
+                  if (finalTop < offset) {
+                    finalTop = offset;
+                  }
 
-      const cardStyle: React.CSSProperties = {
-        position: 'fixed',
-        left: mousePosition.x + 10, 
-        top: finalTop,             
-        zIndex: 9999,
-        pointerEvents: 'none',
-      };
+                  if (finalTop + cardHeight + offset > viewportHeight) {
+                    finalTop = viewportHeight - cardHeight - offset;
+                  }
 
-      return (
-        <div style={cardStyle}>
-          <img
-            src={deckItem.card.image_uris.normal}
-            alt={deckItem.card.name}
-            className="w-60 rounded-lg shadow-2xl"
-          />
-        </div>
-      );
-    })()}
+                  const cardStyle: React.CSSProperties = {
+                    position: 'fixed',
+                    left: mousePosition.x + 10,
+                    top: finalTop,
+                    zIndex: 9999,
+                    pointerEvents: 'none',
+                  };
+
+                  return (
+                    <div style={cardStyle}>
+                      <img
+                        src={deckItem.card.image_uris.normal}
+                        alt={deckItem.card.name}
+                        className="w-60 rounded-lg shadow-2xl"
+                      />
+                    </div>
+                  );
+                })()}
             </li>
           ))}
         </ul>
