@@ -99,38 +99,48 @@ function DeckList({
 
               <button
                 onClick={() => removeDeckItem(index)}
-                className="px-2 py-0.5 rounded bg-red-600 hover:bg-red-700 text-lg font-bold"
+                className="rounded text-sm font-bold "
                 title="Remover carta"
               >
                 &times;
               </button>
 
-              {hoveredCardId === deckItem.card?.id &&
-                deckItem.card?.image_uris?.normal && (
-                  <div
-                    className="fixed pointer-events-none"
-                    style={{
-                      left: mousePosition.x + 10,
-                      top: mousePosition.y - 150,
-                      zIndex: 9999,
-                    }}
-                  >
-                    <img
-                      src={deckItem.card.image_uris.normal}
-                      alt={deckItem.card.name}
-                      className="w-60 rounded-lg shadow-2xl"
-                      onLoad={() =>
-                        console.log('Imagem carregada:', deckItem.card?.name)
-                      }
-                      onError={() =>
-                        console.log(
-                          'Erro ao carregar imagem:',
-                          deckItem.card?.name
-                        )
-                      }
-                    />
-                  </div>
-                )}
+{hoveredCardId === deckItem.card?.id &&
+    deckItem.card?.image_uris?.normal &&
+    (() => {
+      const cardWidth = 240; 
+      const cardHeight = cardWidth * 1.4;
+      const offset = 10; 
+      const viewportHeight = window.innerHeight;
+
+      let finalTop = mousePosition.y - cardHeight / 2;
+
+      if (finalTop < offset) {
+        finalTop = offset; 
+      }
+      
+      if (finalTop + cardHeight + offset > viewportHeight) {
+        finalTop = viewportHeight - cardHeight - offset;
+      }
+
+      const cardStyle: React.CSSProperties = {
+        position: 'fixed',
+        left: mousePosition.x + 10, 
+        top: finalTop,             
+        zIndex: 9999,
+        pointerEvents: 'none',
+      };
+
+      return (
+        <div style={cardStyle}>
+          <img
+            src={deckItem.card.image_uris.normal}
+            alt={deckItem.card.name}
+            className="w-60 rounded-lg shadow-2xl"
+          />
+        </div>
+      );
+    })()}
             </li>
           ))}
         </ul>
