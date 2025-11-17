@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import type { ScryfallCard } from '../services/scryfall/types';
+import type { ScryfallCard } from '@/services/scryfall';
 
 interface CardDialogContextType {
   selectedCard: ScryfallCard | null;
