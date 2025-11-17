@@ -1,4 +1,5 @@
 import type { DeckItem } from '../types/deck';
+import { useCardDialog } from "@/contexts/CardDialogContext";
 
 interface CardGridProps {
   deckItems: DeckItem[];
@@ -6,10 +7,11 @@ interface CardGridProps {
   onCardClick?: (card: DeckItem) => void;
 }
 
-function CardGrid({ deckItems, loading = false, onCardClick }: CardGridProps) {
-  const loadedCards = deckItems.filter(
-    (item) => item.card !== null && !item.loading && !item.error
-  );
+function CardGrid({ deckItems, loading = false }: CardGridProps) {
+    const { openCard } = useCardDialog();
+    const loadedCards = deckItems.filter(
+        (item) => item.card !== null && !item.loading && !item.error
+    );
 
   if (loading) {
     return (
@@ -44,7 +46,7 @@ function CardGrid({ deckItems, loading = false, onCardClick }: CardGridProps) {
             <div
               key={`${card.id}-${index}`}
               className="relative cursor-pointer z-0"
-              onClick={() => onCardClick?.(deckItem)}
+              onClick={() => openCard(card)}
             >
               {card.image_uris?.normal ? (
                 <div className="relative">
