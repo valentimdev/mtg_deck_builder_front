@@ -31,9 +31,12 @@ export function useDeck(): DeckContextValue {
         try {
             const deckData: CompleteDeckRead = await DeckService.getById(deckId);
 
+            // Garante que cards seja um array (pode ser undefined/null se o deck estiver vazio)
+            const cards = deckData.cards || [];
+
             // Separa comandante e cartas do deck
-            const commanderCard = deckData.cards.find(card => card.is_commander);
-            const mainDeckCards = deckData.cards.filter(card => !card.is_commander);
+            const commanderCard = cards.find(card => card.is_commander);
+            const mainDeckCards = cards.filter(card => !card.is_commander);
 
             // Converte comandante
             const commanderItem: DeckItem | null = commanderCard
@@ -59,18 +62,29 @@ export function useDeck(): DeckContextValue {
         setError(null);
 
         try {
-            // Tenta listar os decks disponíveis
-            const deckList = await DeckService.getAll();
+            // Para testar com deck vazio, você pode:
+            // 1. Deletar todos os decks no backend, ou
+            // 2. Modificar a linha abaixo para sempre criar um novo deck
+            const FORCE_NEW_DECK = true; // Mude para true para sempre criar um deck vazio
 
             let deckId: number;
 
-            if (deckList.decks && deckList.decks.length > 0) {
-                // Usa o primeiro deck disponível
-                deckId = deckList.decks[0].id;
-            } else {
-                // Cria um novo deck se não houver nenhum
-                const newDeck = await DeckService.create({ name: 'Meu Deck' });
+            if (FORCE_NEW_DECK) {
+                // Sempre cria um novo deck vazio (útil para testes)
+                const newDeck = await DeckService.create({ name: `Deck ${Date.now()}` });
                 deckId = newDeck.id;
+            } else {
+                // Tenta listar os decks disponíveis
+                const deckList = await DeckService.getAll();
+
+                if (deckList.decks && deckList.decks.length > 0) {
+                    // Usa o primeiro deck disponível
+                    deckId = deckList.decks[0].id;
+                } else {
+                    // Cria um novo deck se não houver nenhum
+                    const newDeck = await DeckService.create({ name: 'Meu Deck' });
+                    deckId = newDeck.id;
+                }
             }
 
             setCurrentDeckId(deckId);
