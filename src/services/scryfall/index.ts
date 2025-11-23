@@ -1,6 +1,8 @@
 export { scryfallService } from './scryfallService';
 export type {
-  ScryfallCard,
+  BackendCard,
+  ScryfallCard, // Alias para compatibilidade
   ScryfallError,
   ScryfallSearchResponse,
 } from './types';
+export { getImageUris, getColorsArray, getColorIdentityArray, isCardCompatibleWithCommander } from './cardHelpers';

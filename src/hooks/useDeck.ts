@@ -1,149 +1,187 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { DeckService } from '@/services/deckService';
 import { scryfallService } from '@/services/scryfall';
 import type { DeckItem, DeckContextValue } from '../types/deck';
+import type { CompleteDeckRead, FullDeckCards } from '@/services/deckService';
+import type { BackendCard } from '@/services/scryfall/types';
 
 export { type DeckItem } from '../types/deck';
 
+// Converte FullDeckCards do backend para DeckItem
+const convertDeckCardToDeckItem = (deckCard: FullDeckCards): DeckItem => ({
+    quantity: deckCard.quantidade,
+    cardName: deckCard.card.name,
+    card: deckCard.card,
+    loading: false,
+    error: null,
+});
+
 export function useDeck(): DeckContextValue {
+    const [currentDeckId, setCurrentDeckId] = useState<number | null>(null);
+    const [commander, setCommander] = useState<DeckItem | null>(null);
     const [deckItems, setDeckItems] = useState<DeckItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const loadDeckFromTxt = async () => {
+    // Carrega um deck específico do backend
+    const loadDeck = useCallback(async (deckId: number) => {
         setLoading(true);
         setError(null);
 
         try {
-            const response = await fetch('/mock.txt');
-            if (!response.ok) throw new Error('Não foi possível carregar o arquivo mock.txt');
+            const deckData: CompleteDeckRead = await DeckService.getById(deckId);
 
-            const txtContent = await response.text();
-            const lines = txtContent.split('\n').filter((line) => line.trim());
+            // Separa comandante e cartas do deck
+            const commanderCard = deckData.cards.find(card => card.is_commander);
+            const mainDeckCards = deckData.cards.filter(card => !card.is_commander);
 
-            const deckEntries = lines
-                .map((line) => {
-                    const trimmedLine = line.trim();
-                    const spaceIndex = trimmedLine.indexOf(' ');
-                    if (spaceIndex === -1) return null;
+            // Converte comandante
+            const commanderItem: DeckItem | null = commanderCard
+                ? convertDeckCardToDeckItem(commanderCard)
+                : null;
 
-                    const quantity = parseInt(trimmedLine.substring(0, spaceIndex));
-                    const cardName = trimmedLine.substring(spaceIndex + 1);
+            // Converte cartas do deck
+            const deckItemsList: DeckItem[] = mainDeckCards.map(convertDeckCardToDeckItem);
 
-                    if (isNaN(quantity) || !cardName) return null;
-                    return { quantity, cardName };
-                })
-                .filter(Boolean) as { quantity: number; cardName: string }[];
-
-            const initialDeckItems: DeckItem[] = deckEntries.map((entry) => ({
-                quantity: entry.quantity,
-                cardName: entry.cardName,
-                card: null,
-                loading: true,
-                error: null,
-            }));
-
-            setDeckItems(initialDeckItems);
-
-            for (let i = 0; i < initialDeckItems.length; i++) {
-                const item = initialDeckItems[i];
-
-                try {
-                    if (i > 0) await new Promise((r) => setTimeout(r, 150));
-                    const card = await scryfallService.getCardByName(item.cardName);
-
-                    setDeckItems((prev) =>
-                        prev.map((prevItem, index) =>
-                            index === i
-                                ? { ...prevItem, card, loading: false, error: null }
-                                : prevItem
-                        )
-                    );
-                } catch (err) {
-                    console.error(`Erro ao buscar carta "${item.cardName}":`, err);
-                    setDeckItems((prev) =>
-                        prev.map((prevItem, index) =>
-                            index === i
-                                ? {
-                                    ...prevItem,
-                                    card: null,
-                                    loading: false,
-                                    error: err instanceof Error ? err.message : 'Erro desconhecido',
-                                }
-                                : prevItem
-                        )
-                    );
-                }
-            }
+            setCommander(commanderItem);
+            setDeckItems(deckItemsList);
         } catch (err) {
             console.error('Erro ao carregar deck:', err);
             setError(err instanceof Error ? err.message : 'Erro ao carregar deck');
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    const removeDeckItem = (index: number) => {
-        setDeckItems((prev) => prev.filter((_, i) => i !== index));
-    };
+    // Inicializa ou carrega um deck
+    const initializeDeck = useCallback(async () => {
+        setLoading(true);
+        setError(null);
 
-    const addDeckItem = (cardName: string, quantity = 1) => {
-        setDeckItems((prev) => {
-            const existingIndex = prev.findIndex(
-                (item) => item.cardName.toLowerCase() === cardName.toLowerCase()
-            );
+        try {
+            // Tenta listar os decks disponíveis
+            const deckList = await DeckService.getAll();
 
-            if (existingIndex !== -1) {
-                const updated = [...prev];
-                updated[existingIndex] = {
-                    ...updated[existingIndex],
-                    quantity: updated[existingIndex].quantity + quantity,
-                };
-                return updated;
+            let deckId: number;
+
+            if (deckList.decks && deckList.decks.length > 0) {
+                // Usa o primeiro deck disponível
+                deckId = deckList.decks[0].id;
+            } else {
+                // Cria um novo deck se não houver nenhum
+                const newDeck = await DeckService.create({ name: 'Meu Deck' });
+                deckId = newDeck.id;
             }
 
-            fetchCardData(cardName);
+            setCurrentDeckId(deckId);
+            await loadDeck(deckId);
+        } catch (err) {
+            console.error('Erro ao inicializar deck:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao inicializar deck');
+        } finally {
+            setLoading(false);
+        }
+    }, [loadDeck]);
 
-            return [
-                ...prev,
-                { quantity, cardName, card: null, loading: true, error: null },
-            ];
-        });
-    };
-
-    const fetchCardData = async (cardName: string) => {
-        try {
-            const card = await scryfallService.getCardByName(cardName);
-            setDeckItems((prev) =>
-                prev.map((item) =>
-                    item.cardName.toLowerCase() === cardName.toLowerCase()
-                        ? { ...item, card, loading: false, error: null }
-                        : item
-                )
-            );
-        } catch (error) {
-            setDeckItems((prev) =>
-                prev.map((item) =>
-                    item.cardName.toLowerCase() === cardName.toLowerCase()
-                        ? {
-                            ...item,
-                            card: null,
-                            loading: false,
-                            error:
-                                error instanceof Error ? error.message : 'Erro desconhecido',
-                        }
-                        : item
-                )
-            );
+    const loadDeckFromTxt = async () => {
+        if (currentDeckId) {
+            await loadDeck(currentDeckId);
+        } else {
+            await initializeDeck();
         }
     };
 
-    const totalCards = deckItems.reduce((sum, item) => sum + item.quantity, 0);
+    const removeDeckItem = async (index: number) => {
+        if (!currentDeckId) {
+            console.error('Nenhum deck selecionado');
+            return;
+        }
+
+        const itemToRemove = deckItems[index];
+        if (!itemToRemove || !itemToRemove.card) {
+            console.error('Item não encontrado ou sem carta');
+            return;
+        }
+
+        try {
+            // Remove a carta do backend
+            await DeckService.removeCard(currentDeckId, itemToRemove.card.id, 1);
+
+            // Atualiza o estado local
+            if (itemToRemove.quantity > 1) {
+                setDeckItems((prev) =>
+                    prev.map((item, i) =>
+                        i === index
+                            ? { ...item, quantity: item.quantity - 1 }
+                            : item
+                    )
+                );
+            } else {
+                setDeckItems((prev) => prev.filter((_, i) => i !== index));
+            }
+        } catch (err) {
+            console.error('Erro ao remover carta:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao remover carta');
+        }
+    };
+
+    const addDeckItem = async (cardName: string, quantity = 1) => {
+        if (!currentDeckId) {
+            console.error('Nenhum deck selecionado');
+            return;
+        }
+
+        try {
+            // Primeiro, busca a carta pelo nome para obter o ID
+            const card: BackendCard = await scryfallService.getCardByName(cardName);
+
+            // Verifica se a carta já está no deck
+            const existingIndex = deckItems.findIndex(
+                (item) => item.card?.id === card.id
+            );
+
+            if (existingIndex !== -1) {
+                // Se já existe, aumenta a quantidade
+                const existingItem = deckItems[existingIndex];
+                const newQuantity = existingItem.quantity + quantity;
+
+                await DeckService.addCard(currentDeckId, card.id, newQuantity);
+
+                setDeckItems((prev) =>
+                    prev.map((item, i) =>
+                        i === existingIndex
+                            ? { ...item, quantity: newQuantity, card }
+                            : item
+                    )
+                );
+            } else {
+                // Se não existe, adiciona nova carta
+                await DeckService.addCard(currentDeckId, card.id, quantity);
+
+                const newItem: DeckItem = {
+                    quantity,
+                    cardName: card.name,
+                    card,
+                    loading: false,
+                    error: null,
+                };
+
+                setDeckItems((prev) => [...prev, newItem]);
+            }
+        } catch (err) {
+            console.error('Erro ao adicionar carta:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao adicionar carta');
+        }
+    };
+
+    const totalCards = deckItems.reduce((sum, item) => sum + item.quantity, 0) + (commander?.quantity || 0);
 
     useEffect(() => {
-        loadDeckFromTxt();
-    }, []);
+        initializeDeck();
+    }, [initializeDeck]);
 
     return {
+        commander,
         deckItems,
         loading,
         error,

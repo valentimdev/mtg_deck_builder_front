@@ -1,49 +1,28 @@
-
-export interface ScryfallCard {
+// Interface da carta do backend
+export interface BackendCard {
   id: string;
-  oracle_id: string;
   name: string;
-  lang: string;
-  released_at: string;
-  uri: string;
-  scryfall_uri: string;
-  layout: string;
-  image_uris?: {
-    small: string;
-    normal: string;
-    large: string;
-    png: string;
-    art_crop: string;
-    border_crop: string;
-  };
-  mana_cost: string;
+  colors: string;
+  color_identity: string;
   cmc: number;
-  type_line: string;
-  oracle_text: string;
-  power?: string;
-  toughness?: string;
-  colors: string[];
-  color_identity: string[];
-  keywords: string[];
-  legalities: Record<string, string>;
-  set: string;
-  set_name: string;
-  rarity: string;
-  artist: string;
-  prices: {
-    usd: string | null;
-    usd_foil: string | null;
-    eur: string | null;
-    eur_foil: string | null;
-  };
+  mana_cost: string;
+  image: string;
+  art: string;
+  legal_commanders: boolean;
+  is_commander: boolean;
+  price: string;
+  edhrec_rank: number | null;
 }
+
+// Alias para compatibilidade - agora BackendCard é o tipo principal
+export type ScryfallCard = BackendCard;
 
 export interface ScryfallSearchResponse {
   object: string;
   total_cards: number;
   has_more: boolean;
   next_page?: string;
-  data: ScryfallCard[];
+  data: BackendCard[];
 }
 
 export interface ScryfallError {

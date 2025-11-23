@@ -1,67 +1,141 @@
 import api from "@/api/api";
+import type { BackendCard } from "./scryfall/types";
 
-export interface DeckDTO {
-    id: string;
+// Tipos baseados nos schemas do backend
+export interface DeckInDB {
+    id: number;
     name: string;
-    format: string;
+    last_update: string;
+}
+
+export interface DeckCreate {
+    name: string;
     commander?: string;
-    createdAt: string;
-    updatedAt: string;
+}
+
+export interface DeckUpdate {
+    name: string;
+}
+
+export interface DeckList {
+    decks: DeckInDB[];
+}
+
+export interface FullDeckCards {
+    id?: number;
+    deck_id: number;
+    card: BackendCard;
+    quantidade: number;
+    is_commander: boolean;
+}
+
+export interface CompleteDeckRead {
+    id: number;
+    name: string;
+    last_update: string;
+    cards: FullDeckCards[];
+}
+
+export interface DeckQuantity {
+    card_id: string;
+    quantidade: number;
 }
 
 export const DeckService = {
-    getAll: async (): Promise<DeckDTO[]> => {
-        const res = await api.get("/deck");
+    // Lista todos os decks
+    getAll: async (): Promise<DeckList> => {
+        const res = await api.get("/decks/");
         return res.data;
     },
 
-    getById: async (id: string): Promise<DeckDTO> => {
-        const res = await api.get(`/deck/${id}`);
+    // Busca um deck completo por ID
+    getById: async (id: number): Promise<CompleteDeckRead> => {
+        const res = await api.get(`/decks/${id}`);
         return res.data;
     },
 
-    getByName: async (name: string): Promise<DeckDTO> => {
-        const res = await api.get(`/deck/name/${name}`);
+    // Cria um novo deck
+    create: async (data: DeckCreate): Promise<DeckInDB> => {
+        const res = await api.post("/decks/", data);
         return res.data;
     },
 
-    getInitial: async (): Promise<DeckDTO> => {
-        const res = await api.get("/deck/inicial");
+    // Renomeia um deck
+    rename: async (id: number, data: DeckUpdate): Promise<DeckInDB> => {
+        const res = await api.put(`/decks/${id}`, data);
         return res.data;
     },
 
-    getMeta: async () => {
-        const res = await api.get("/deck/meta");
+    // Deleta um deck
+    delete: async (id: number): Promise<void> => {
+        await api.delete(`/decks/${id}`);
+    },
+
+    // Copia um deck
+    copy: async (id: number, destName: string): Promise<DeckInDB> => {
+        const res = await api.post(`/decks/${id}/copy`, { name: destName });
         return res.data;
     },
 
-    create: async (data: { name: string; format: string }) => {
-        const res = await api.post("/deck", data);
+    // Adiciona uma carta ao deck
+    addCard: async (id: number, cardId: string, quantidade: number): Promise<FullDeckCards> => {
+        const res = await api.post(`/decks/${id}/add`, {
+            card_id: cardId,
+            quantidade,
+        });
         return res.data;
     },
 
-    update: async (id: string, data: any) => {
-        const res = await api.put(`/deck/${id}`, data);
+    // Remove uma carta do deck
+    removeCard: async (id: number, cardId: string, quantidade: number): Promise<FullDeckCards> => {
+        const res = await api.post(`/decks/${id}/remove`, {
+            card_id: cardId,
+            quantidade,
+        });
         return res.data;
     },
 
-    delete: async (id: string) => {
-        const res = await api.delete(`/deck/${id}`);
+    // Define o comandante do deck
+    setCommander: async (id: number, cardId: string): Promise<FullDeckCards> => {
+        // O backend espera card_id como string no body
+        const res = await api.post(`/decks/${id}/commander`, cardId, {
+            headers: { 'Content-Type': 'application/json' },
+        });
         return res.data;
     },
 
-    getStats: async (id: string) => {
-        const res = await api.get(`/deck/${id}/stats`);
+    // Remove o comandante do deck
+    resetCommander: async (id: number): Promise<void> => {
+        await api.delete(`/decks/${id}/commander`);
+    },
+
+    // Busca o comandante do deck
+    getCommander: async (id: number): Promise<FullDeckCards> => {
+        const res = await api.get(`/decks/${id}/commander`);
         return res.data;
     },
 
-    exportTxt: async (id: string) => {
-        const res = await api.get(`/deck/${id}/txt`);
+    // Exporta deck como TXT
+    exportTxt: async (id: number): Promise<Blob> => {
+        const res = await api.get(`/decks/${id}/txt`, {
+            responseType: 'blob',
+        });
         return res.data;
     },
 
-    exportCsv: async (id: string) => {
-        const res = await api.get(`/deck/${id}/csv`);
+    // Exporta deck como CSV
+    exportCsv: async (id: number): Promise<Blob> => {
+        const res = await api.get(`/decks/${id}/csv`, {
+            responseType: 'blob',
+        });
+        return res.data;
+    },
+
+    // Exporta deck como JSON
+    exportJson: async (id: number): Promise<Blob> => {
+        const res = await api.get(`/decks/${id}/json`, {
+            responseType: 'blob',
+        });
         return res.data;
     },
 };

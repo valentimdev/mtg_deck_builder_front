@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import type { ScryfallCard } from '@/services/scryfall';
+import { getImageUris } from '@/services/scryfall';
 
 interface CardDialogContextType {
   selectedCard: ScryfallCard | null;
@@ -23,7 +24,9 @@ export function CardDialogProvider({ children }: { children: React.ReactNode }) 
     return (
         <CardDialogContext.Provider value={{ selectedCard, openCard, closeCard }}>
             {children}
-            {selectedCard && (
+            {selectedCard && (() => {
+                const imageUris = getImageUris(selectedCard);
+                return (
                 <div
                     className="fixed inset-0 backdrop-blur-sm bg-black/20 flex items-center justify-center z-[9999]"
                     onClick={closeCard} >
@@ -31,13 +34,14 @@ export function CardDialogProvider({ children }: { children: React.ReactNode }) 
                         className="relative max-w-[90vw] max-h-[90vh] p-4"
                         onClick={(e) => e.stopPropagation()} >
                         <img
-                            src={selectedCard.image_uris?.normal}
+                            src={imageUris.normal}
                             alt={selectedCard.name}
                             className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         />
                     </div>
                 </div>
-            )}
+                );
+            })()}
         </CardDialogContext.Provider>
     );
 }

@@ -1,10 +1,14 @@
 import type {
-  ScryfallCard,
-  ScryfallError,
+  BackendCard,
   ScryfallSearchResponse,
 } from './types';
+import { filterEnglishCards } from './languageFilter';
 
-const SCRYFALL_API_BASE = 'https://api.scryfall.com';
+interface BackendAutocompleteResponse {
+  cards: BackendCard[];
+}
+
+const BACKEND_API_BASE = 'http://0.0.0.0:3839';
 const RATE_LIMIT_DELAY = 100;
 
 class ScryfallService {
@@ -23,53 +27,55 @@ class ScryfallService {
     this.lastRequestTime = Date.now();
   }
 
-  private async fetchFromScryfall<T>(
+  private async fetchFromBackend<T>(
     endpoint: string,
     params?: Record<string, string>
   ): Promise<T> {
     await this.waitForRateLimit();
 
-    const url = new URL(`${SCRYFALL_API_BASE}${endpoint}`);
+    let url = `${BACKEND_API_BASE}${endpoint}`;
 
     if (params) {
+      const searchParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
-        url.searchParams.append(key, value);
+        searchParams.append(key, value);
       });
+      url += `?${searchParams.toString()}`;
     }
 
     try {
-      const response = await fetch(url.toString());
+      const response = await fetch(url);
 
       if (!response.ok) {
-        const error: ScryfallError = await response.json();
-        throw new Error(`Scryfall API Error: ${error.details}`);
+        const errorText = await response.text();
+        throw new Error(`Backend API Error: ${errorText || response.statusText}`);
       }
 
       return await response.json();
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(`Erro ao buscar dados do Scryfall: ${error.message}`);
+        throw new Error(`Erro ao buscar dados do backend: ${error.message}`);
       }
       throw error;
     }
   }
 
-  async getCardById(cardId: string): Promise<ScryfallCard> {
-    return this.fetchFromScryfall<ScryfallCard>(`/cards/${cardId}`);
+  async getCardById(cardId: string): Promise<BackendCard> {
+    return this.fetchFromBackend<BackendCard>(`/api/cards/${cardId}`);
   }
 
-  async getCardByName(name: string): Promise<ScryfallCard> {
-    return this.fetchFromScryfall<ScryfallCard>('/cards/named', {
-      exact: name,
-    });
+  async getCardByName(name: string): Promise<BackendCard> {
+    // Usa a rota /api/cards/named/{name} do backend
+    return this.fetchFromBackend<BackendCard>(`/api/cards/named/${encodeURIComponent(name)}`);
   }
 
-  async autocomplete(query: string): Promise<string[]> {
-    const response = await this.fetchFromScryfall<{ data: string[] }>(
-      '/cards/autocomplete',
-      { q: query }
+  async autocomplete(query: string): Promise<BackendCard[]> {
+    const response = await this.fetchFromBackend<BackendAutocompleteResponse>(
+      `/api/cards/autocomplete/${encodeURIComponent(query)}`
     );
-    return response.data;
+    const cards = response.cards || [];
+    // Filtra apenas cartas em inglês
+    return filterEnglishCards(cards);
   }
 
   async searchCards(
@@ -89,17 +95,22 @@ class ScryfallService {
       dir?: 'auto' | 'asc' | 'desc';
     }
   ): Promise<ScryfallSearchResponse> {
-    const params: Record<string, string> = { q: query };
+    // O autocomplete já retorna objetos Card completos e filtra apenas inglês
+    try {
+      const cards = await this.autocomplete(query);
 
-    if (options?.page) params.page = options.page.toString();
-    if (options?.unique) params.unique = options.unique;
-    if (options?.order) params.order = options.order;
-    if (options?.dir) params.dir = options.dir;
+      const limit = options?.page ? (options.page - 1) * 20 + 20 : 20;
+      const paginatedCards = cards.slice(0, limit);
 
-    return this.fetchFromScryfall<ScryfallSearchResponse>(
-      '/cards/search',
-      params
-    );
+      return {
+        object: 'list',
+        total_cards: cards.length,
+        has_more: cards.length > limit,
+        data: paginatedCards,
+      };
+    } catch (error) {
+      throw new Error(`Erro ao buscar cartas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
   }
 
   async getCardsBySet(setCode: string): Promise<ScryfallSearchResponse> {
@@ -119,9 +130,10 @@ class ScryfallService {
     return this.searchCards(`legal:${format}`);
   }
 
-  async getRandomCard(query?: string): Promise<ScryfallCard> {
-    const params = query ? { q: query } : undefined;
-    return this.fetchFromScryfall<ScryfallCard>('/cards/random', params);
+  async getRandomCard(_query?: string): Promise<BackendCard> {
+    // Se sua API tiver uma rota de random, use aqui
+    // Por enquanto, retorna erro ou busca uma carta aleatória via autocomplete
+    throw new Error('getRandomCard não implementado para o backend local');
   }
 }
 

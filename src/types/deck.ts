@@ -9,6 +9,7 @@ export interface DeckItem {
 }
 
 export interface DeckState {
+  commander: DeckItem | null;
   deckItems: DeckItem[];
   loading: boolean;
   error: string | null;
@@ -17,8 +18,8 @@ export interface DeckState {
 
 export interface DeckActions {
   loadDeckFromTxt: () => Promise<void>;
-  removeDeckItem: (index: number) => void;
-  addDeckItem: (cardName: string, quantity?: number) => void;
+  removeDeckItem: (index: number) => Promise<void>;
+  addDeckItem: (cardName: string, quantity?: number) => Promise<void>;
   reloadDeck: () => Promise<void>;
 }
 

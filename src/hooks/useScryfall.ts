@@ -20,7 +20,7 @@ export function useCard(cardId?: string) {
 
     const fetchCard = async () => {
       setState(prev => ({ ...prev, loading: true, error: null }));
-      
+
       try {
         const card = await scryfallService.getCardById(cardId);
         setState({ card, loading: false, error: null });
@@ -117,7 +117,7 @@ export function useCardSearch(query: string, options?: {
 
 
 export function useCardAutocomplete(query: string, debounceMs = 300) {
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<ScryfallCard[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
