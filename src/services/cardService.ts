@@ -1,38 +1,32 @@
 import api from "@/api/api";
+import type { ScryfallCard } from "./scryfall/types";
 
 export const CardService = {
     autocomplete: async (partial: string) => {
-        const res = await api.get(`/card/autocomplete/${partial}`);
-        return res.data;
+        return api.get<ScryfallCard[]>(`/card/autocomplete/${partial}`);
     },
 
     searchByName: async (name: string) => {
-        const res = await api.get(`/card/name/${name}`);
-        return res.data;
+        return api.get<ScryfallCard>(`/card/name/${name}`);
     },
 
     getTopCommanders: async () => {
-        const res = await api.get("/card/commander");
-        return res.data;
+        return api.get<ScryfallCard[]>(`/card/commander`);
     },
 
     getCommanderMeta: async (name: string) => {
-        const res = await api.get(`/card/commander/${name}`);
-        return res.data;
+        return api.get<ScryfallCard>(`/card/commander/${name}`);
     },
 
     addCardToDeck: async (deckId: string, card: any) => {
-        const res = await api.post(`/deck/${deckId}/card`, card);
-        return res.data;
+        return api.post<ScryfallCard>(`/deck/${deckId}/card`, card);
     },
 
     updateCardQty: async (deckId: string, cardId: string, qty: number) => {
-        const res = await api.put(`/deck/${deckId}/card/${cardId}`, { qty });
-        return res.data;
+        return api.put<ScryfallCard>(`/deck/${deckId}/card/${cardId}`, { qty });        
     },
 
     removeCardFromDeck: async (deckId: string, cardId: string) => {
-        const res = await api.delete(`/deck/${deckId}/card/${cardId}`);
-        return res.data;
+        return api.delete<ScryfallCard>(`/deck/${deckId}/card/${cardId}`);
     },
 };
