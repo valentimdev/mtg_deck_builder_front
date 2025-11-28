@@ -15,7 +15,15 @@ function App() {
     const [cardGridViewMode, setCardGridViewMode] = useState<ViewMode>('deck');
 
     const handleAddCard = (card: ScryfallCard) => {
-        deckState.addDeckItem(card.name, 1);
+        deckState.addCardByCard(card, 1);
+    };
+
+    const handleAddAsCommander = (cardId: string) => {
+        deckState.addCardAsCommander(cardId);
+    };
+
+    const handleRemoveCard = (cardId: string) => {
+        deckState.removeCardById(cardId);
     };
 
     const handleSearch = (query: string, results: ScryfallCard[]) => {
@@ -25,7 +33,13 @@ function App() {
     };
 
     return (
-        <CardDialogProvider>
+        <CardDialogProvider
+            commander={deckState.commander}
+            deckItems={deckState.deckItems}
+            onAddCard={handleAddCard}
+            onAddAsCommander={handleAddAsCommander}
+            onRemoveCard={handleRemoveCard}
+        >
         <div className="flex w-full h-full">
             <div className="border border-amber-400 h-full w-80 fixed left-0 top-0 bottom-0 z-20">
                 <DeckList commander={deckState.commander} {...deckState} />

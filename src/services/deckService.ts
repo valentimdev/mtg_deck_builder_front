@@ -90,10 +90,8 @@ export const DeckService = {
 
     // Define o comandante do deck
     setCommander: async (id: number, cardId: string): Promise<FullDeckCards> => {
-        // O backend espera card_id como string no body
-        return api.post<FullDeckCards>(`/decks/${id}/commander`, cardId, {
-            headers: { 'Content-Type': 'application/json' },
-        });
+        // O FastAPI espera card_id como campo JSON no body
+        return api.post<FullDeckCards>(`/decks/${id}/commander`, { card_id: cardId });
     },
 
     // Remove o comandante do deck

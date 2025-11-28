@@ -16,10 +16,15 @@ export interface DeckState {
   totalCards: number;
 }
 
+import type { ScryfallCard } from '@/services/scryfall';
+
 export interface DeckActions {
   loadDeckFromTxt: () => Promise<void>;
   removeDeckItem: (index: number) => Promise<void>;
+  removeCardById: (cardId: string) => Promise<void>;
   addDeckItem: (cardName: string, quantity?: number) => Promise<void>;
+  addCardByCard: (card: ScryfallCard, quantity?: number) => Promise<void>;
+  addCardAsCommander: (cardId: string) => Promise<void>;
   reloadDeck: () => Promise<void>;
 }
 

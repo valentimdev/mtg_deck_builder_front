@@ -148,8 +148,26 @@ export function useDeck(): DeckContextValue {
         try {
             // Primeiro, busca a carta pelo nome para obter o ID
             const card: BackendCard = await scryfallService.getCardByName(cardName);
+            await addCardByCard(card, quantity);
+        } catch (err) {
+            console.error('Erro ao adicionar carta:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao adicionar carta');
+        }
+    };
 
-            // Verifica se a carta já está no deck
+    const addCardByCard = async (card: BackendCard, quantity = 1) => {
+        if (!currentDeckId) {
+            console.error('Nenhum deck selecionado');
+            return;
+        }
+
+        if (!card.id) {
+            console.error('Carta sem ID');
+            return;
+        }
+
+        try {
+            // Verifica se a carta já está no deck (exceto se for commander)
             const existingIndex = deckItems.findIndex(
                 (item) => item.card?.id === card.id
             );
@@ -188,6 +206,89 @@ export function useDeck(): DeckContextValue {
         }
     };
 
+    const removeCardById = async (cardId: string) => {
+        if (!currentDeckId) {
+            console.error('Nenhum deck selecionado');
+            return;
+        }
+
+        try {
+            // Verifica se é o commander
+            if (commander?.card?.id === cardId) {
+                await DeckService.resetCommander(currentDeckId);
+                setCommander(null);
+                // Se o commander também está em deckItems, removemos
+                const commanderInDeck = deckItems.findIndex(
+                    (item) => item.card?.id === cardId
+                );
+                if (commanderInDeck !== -1) {
+                    setDeckItems((prev) => prev.filter((_, i) => i !== commanderInDeck));
+                }
+            } else {
+                // Remove do deck normal
+                const itemIndex = deckItems.findIndex(
+                    (item) => item.card?.id === cardId
+                );
+                if (itemIndex === -1) {
+                    console.error('Carta não encontrada no deck');
+                    return;
+                }
+
+                const itemToRemove = deckItems[itemIndex];
+                await DeckService.removeCard(currentDeckId, cardId, 1);
+
+                if (itemToRemove.quantity > 1) {
+                    setDeckItems((prev) =>
+                        prev.map((item, i) =>
+                            i === itemIndex
+                                ? { ...item, quantity: item.quantity - 1 }
+                                : item
+                        )
+                    );
+                } else {
+                    setDeckItems((prev) => prev.filter((_, i) => i !== itemIndex));
+                }
+            }
+
+            // Recarrega o deck para garantir sincronização
+            await loadDeck(currentDeckId);
+        } catch (err) {
+            console.error('Erro ao remover carta:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao remover carta');
+        }
+    };
+
+    const addCardAsCommander = async (cardId: string) => {
+        if (!currentDeckId) {
+            console.error('Nenhum deck selecionado');
+            return;
+        }
+
+        try {
+            // Verifica se já é o commander
+            if (commander?.card?.id === cardId) {
+                return;
+            }
+
+            // Verifica se a carta já está no deck
+            const cardInDeck = deckItems.find((item) => item.card?.id === cardId);
+
+            // Se a carta não está no deck, adiciona primeiro
+            if (!cardInDeck) {
+                await DeckService.addCard(currentDeckId, cardId, 1);
+            }
+
+            // Define como commander (a API espera que a carta já esteja no deck)
+            await DeckService.setCommander(currentDeckId, cardId);
+
+            // Recarrega o deck para garantir sincronização
+            await loadDeck(currentDeckId);
+        } catch (err) {
+            console.error('Erro ao adicionar carta como commander:', err);
+            setError(err instanceof Error ? err.message : 'Erro ao adicionar carta como commander');
+        }
+    };
+
     const totalCards = deckItems.reduce((sum, item) => sum + item.quantity, 0) + (commander?.quantity || 0);
 
     useEffect(() => {
@@ -202,7 +303,10 @@ export function useDeck(): DeckContextValue {
         totalCards,
         loadDeckFromTxt,
         removeDeckItem,
+        removeCardById,
         addDeckItem,
+        addCardByCard,
+        addCardAsCommander,
         reloadDeck: loadDeckFromTxt,
     };
 }
