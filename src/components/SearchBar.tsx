@@ -80,7 +80,7 @@ function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
         <div className="relative mt-8 flex flex-col items-center w-full max-w-lg mx-auto">
             <input
                 type="text"
-                placeholder="Pesquise cards... (pressione Enter para ver no grid)"
+                placeholder="Pesquise cards..."
                 className="border border-gray-500 rounded-md p-3 w-full bg-[#d2d2d2] text-black placeholder-gray-700 focus:outline-none focus:ring-2 focus:ring-(--text-dark)"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

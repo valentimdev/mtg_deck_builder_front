@@ -45,17 +45,30 @@ function CardGrid({
         (item) => item.card !== null && !item.loading && !item.error
     );
 
-    // Função para carregar cartas meta ou top comandantes
+
+    const isCardInDeck = (cardId: string): { inDeck: boolean; quantity?: number } => {
+
+      if (commander?.card?.id === cardId) {
+          return { inDeck: true, quantity: commander.quantity };
+      }
+
+      const deckItem = deckItems.find(item => item.card?.id === cardId);
+      if (deckItem) {
+          return { inDeck: true, quantity: deckItem.quantity };
+      }
+      return { inDeck: false };
+    };
+
     const loadMetaCards = useCallback(async () => {
         setMetaLoading(true);
         try {
             if (commander?.cardName) {
-                // Se há comandante, busca as cartas meta do comandante
+
                 const metaCards = await commanderService.getAllMetaCards(commander.cardName);
                 setMetaCardsByCategory(metaCards);
                 setTopCommanders([]);
             } else {
-                // Se não há comandante, busca os top comandantes do meta
+
                 const commanders = await commanderService.getTopCommanders();
                 setTopCommanders(commanders);
                 setMetaCardsByCategory({});
@@ -69,7 +82,7 @@ function CardGrid({
         }
     }, [commander?.cardName]);
 
-    // Carrega meta cards quando muda para a view meta
+
     const handleViewModeChange = (mode: ViewMode) => {
         setViewMode(mode);
         if (onViewModeChange) {
@@ -80,7 +93,7 @@ function CardGrid({
         }
     };
 
-    // Carrega meta cards quando o comandante muda ou quando muda para view meta
+
     useEffect(() => {
         if (viewMode === 'meta') {
             loadMetaCards();
@@ -89,7 +102,7 @@ function CardGrid({
 
     const isLoading = viewMode === 'deck' ? loading : viewMode === 'meta' ? metaLoading : false;
 
-    // Ordem das categorias (pode ser ajustada)
+
     const categoryOrder = [
         'Top Cards',
         'High Synergy Cards',
@@ -109,7 +122,7 @@ function CardGrid({
   return (
     <div className="h-full flex flex-col bg-[#2a2b2f] relative z-0">
       {/* Tabs para alternar entre visualizações */}
-      <div className="flex border-b border-gray-600 shrink-0">
+      <div className="flex flex-row justify-around items-center gap-40 border-b border-gray-600 shrink-0">
         <button
           onClick={() => handleViewModeChange('deck')}
           className={`px-6 py-3 font-semibold transition-colors ${
@@ -128,7 +141,7 @@ function CardGrid({
               : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
           }`}
         >
-          Search {searchQuery && `(${searchQuery})`}
+          Pesquisa {searchQuery && `(${searchQuery})`}
         </button>
         <button
           onClick={() => handleViewModeChange('meta')}
@@ -154,7 +167,6 @@ function CardGrid({
             </div>
           </div>
         ) : viewMode === 'deck' ? (
-          // View do Deck
           loadedCards.length === 0 ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-white">
@@ -243,7 +255,7 @@ function CardGrid({
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {searchResults.map((card, index) => {
                   const imageUris = getImageUris(card);
-
+                  const { inDeck, quantity } = isCardInDeck(card.id);
                   return (
                     <div
                       key={`${card.id}-${index}`}
@@ -254,13 +266,20 @@ function CardGrid({
                         <img
                           src={imageUris.normal}
                           alt={card.name}
-                          className="w-full rounded-lg shadow-lg border-2 border-gray-600"
+                          className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${
+                            inDeck
+                            ? 'grayscale contrast-125 brightness-110 border-red-500/50'
+                            : 'border-black-500'
+                          }`}
                           loading="lazy"
                         />
                       ) : (
                         <div className="w-full aspect-[63/88] rounded-lg bg-[#3a3b3f] border-2 border-gray-600 flex items-center justify-center p-4">
                           <div className="text-center">
                             <p className="text-white font-semibold text-sm">{card.name}</p>
+                            {inDeck && quantity && (
+                              <p className="text-[#b896ff] font-bold mt-2">x{quantity}</p>
+                            )}
                           </div>
                         </div>
                       )}
@@ -347,7 +366,7 @@ function CardGrid({
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         {cards.map((card, index) => {
                           const imageUris = getImageUris(card);
-
+                          const { inDeck, quantity } = isCardInDeck(card.id);
                           return (
                             <div
                               key={`${card.id}-${index}`}
@@ -358,7 +377,11 @@ function CardGrid({
                                 <img
                                   src={imageUris.normal}
                                   alt={card.name}
-                                  className="w-full rounded-lg shadow-lg border-2 border-gray-600"
+                                  className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${
+                                    inDeck
+                                      ? 'grayscale contrast-125 brightness-110 border-red-500/50'
+                                      : 'border-black-500'
+                                  }`}
                                   loading="lazy"
                                 />
                               ) : (
