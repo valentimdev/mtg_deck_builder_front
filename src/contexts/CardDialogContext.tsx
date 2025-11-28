@@ -59,9 +59,19 @@ export function CardDialogProvider({
       {selectedCard && cardState && (() => {
         const imageUris = getImageUris(selectedCard);
         const { isCommander, isInDeck, hasCommander } = cardState;
-
+        console.log('=== DEBUG CARD DIALOG ===');
+        console.log('selectedCard:', selectedCard);
+        console.log('selectedCard.is_commander:', selectedCard.is_commander);
+        console.log('hasCommander:', hasCommander);
+        console.log('isCommander (é o commander atual?):', isCommander);
+        console.log('isInDeck:', isInDeck);
+        console.log('commander?.card?.id:', commander?.card?.id);
+        console.log('selectedCard.id:', selectedCard.id);
+        
         // Determina quais opções mostrar
-        const showAddAsCommander = !hasCommander;
+        const isLegendaryCreature = selectedCard.type_line?.includes?.('Legendary Creature');
+        const canBeCommander = isLegendaryCreature;
+        const showAddAsCommander = !hasCommander && canBeCommander;
         // Mostra "Adicionar ao Deck" se:
         // - Não está no deck (nem como commander, nem em deckItems)
         // - E (não tem commander OU já tem commander mas a carta não é o commander)
@@ -86,9 +96,15 @@ export function CardDialogProvider({
                   className="max-w-full max-h-[60vh] object-contain rounded-lg"
                 />
               </div>
+              {/*  Preço da carta */}
+
 
               {/* Botões de ação */}
               <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-2">
+                <p className="text-center">
+                  Preço: {selectedCard.price}
+                  {selectedCard.price ? `R$ ${selectedCard.price}` : 'N/A'}
+                </p>
                 {showAddAsCommander && (
                   <button
                     onClick={() => {

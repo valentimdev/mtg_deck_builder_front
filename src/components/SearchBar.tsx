@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { ScryfallCard } from '@/services/scryfall';
 import { scryfallService, getImageUris } from '@/services/scryfall';
-
+import { useCardDialog } from '@/contexts/CardDialogContext';
 interface SearchBarProps {
     onCardSelect: (card: ScryfallCard) => void;
     onSearch?: (query: string, results: ScryfallCard[]) => void;
@@ -14,7 +14,7 @@ function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
     const [loading, setLoading] = useState(false);
     const [showResults, setShowResults] = useState(false);
     const [hasMore, setHasMore] = useState(false);
-
+    const { openCard } = useCardDialog();
     const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -101,7 +101,7 @@ function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
                         <div
                             key={card.id}
                             className="flex items-center gap-3 p-2 hover:bg-[#3a3b3f] cursor-pointer text-white border-b border-gray-700 last:border-0"
-                            onClick={() => onCardSelect?.(card)}
+                            onClick={() => openCard(card)}
                         >
                             {imageUris.small ? (
                                 <img

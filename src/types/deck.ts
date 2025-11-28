@@ -16,8 +16,6 @@ export interface DeckState {
   totalCards: number;
 }
 
-import type { ScryfallCard } from '@/services/scryfall';
-
 export interface DeckActions {
   loadDeckFromTxt: () => Promise<void>;
   removeDeckItem: (index: number) => Promise<void>;

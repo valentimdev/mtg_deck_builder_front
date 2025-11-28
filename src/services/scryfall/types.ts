@@ -9,9 +9,10 @@ export interface BackendCard {
   image: string;
   art: string;
   legal_commanders: boolean;
-  is_commander: boolean;
+  is_commander: number;
   price: string;
   edhrec_rank: number | null;
+  type_line: string;
 }
 
 // Alias para compatibilidade - agora BackendCard é o tipo principal
