@@ -15,7 +15,7 @@ export default function DeckBuilderPage() {
     const deckState = useDeck(deckId ? parseInt(deckId) : null);
     const [searchResults, setSearchResults] = useState<ScryfallCard[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [cardGridViewMode, setCardGridViewMode] = useState<ViewMode>('deck');
+    const [, setCardGridViewMode] = useState<ViewMode>('deck');
 
     const handleAddCard = (card: ScryfallCard) => {
         deckState.addCardByCard(card, 1);
@@ -51,13 +51,21 @@ export default function DeckBuilderPage() {
             {/* Botão de voltar */}
             <button
                 onClick={handleBackToDecks}
-                className="fixed top-4 left-4 z-30 px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors border border-gray-600"
+                className="fixed top-4 right-4 z-30 px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors border border-gray-600"
             >
-                ← Voltar para Decks
+                Voltar para Decks
             </button>
 
             <div className="border border-amber-400 h-full w-80 fixed left-0 top-0 bottom-0 z-20">
-                <DeckList commander={deckState.commander} {...deckState} />
+                <DeckList
+                    commander={deckState.commander}
+                    deckItems={deckState.deckItems}
+                    loading={deckState.loading}
+                    error={deckState.error}
+                    totalCards={deckState.totalCards}
+                    removeDeckItem={deckState.removeDeckItem}
+                    onAddCard={handleAddCard}
+                />
             </div>
 
             <div className="flex flex-col flex-1 h-full ml-80">
@@ -76,6 +84,7 @@ export default function DeckBuilderPage() {
                         searchResults={searchResults}
                         searchQuery={searchQuery}
                         onViewModeChange={setCardGridViewMode}
+                        onAddCard={handleAddCard}
                     />
                 </div>
             </div>

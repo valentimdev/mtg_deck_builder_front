@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { ScryfallCard, ScryfallSearchResponse } from '@/services/scryfall';
+import type { ScryfallCard } from '@/services/scryfall';
 import { scryfallService } from '@/services/scryfall';
 interface UseCardState {
   card: ScryfallCard | null;

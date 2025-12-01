@@ -5,4 +5,11 @@ export type {
   ScryfallError,
   ScryfallSearchResponse,
 } from './types';
-export { getImageUris, getColorsArray, getColorIdentityArray, isCardCompatibleWithCommander } from './cardHelpers';
+export {
+  getImageUris,
+  getColorsArray,
+  getColorIdentityArray,
+  isCardCompatibleWithCommander,
+  isBasicLand,
+  isLand
+} from './cardHelpers';

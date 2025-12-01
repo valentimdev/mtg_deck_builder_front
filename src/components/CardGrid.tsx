@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { DeckItem } from '../types/deck';
 import type { BackendCard } from '@/services/scryfall';
 import { useCardDialog } from "@/contexts/CardDialogContext";
-import { getImageUris, isCardCompatibleWithCommander } from '@/services/scryfall';
+import { getImageUris, isCardCompatibleWithCommander, isBasicLand } from '@/services/scryfall';
 import { commanderService, type MetaCardsByCategory } from '@/services/scryfall/commanderService';
 
 type ViewMode = 'deck' | 'meta' | 'search';
@@ -15,6 +15,7 @@ interface CardGridProps {
   searchQuery?: string;
   onViewModeChange?: (mode: ViewMode) => void;
   onCardClick?: (card: DeckItem) => void;
+  onAddCard?: (card: BackendCard) => void;
 }
 
 function CardGrid({
@@ -24,8 +25,21 @@ function CardGrid({
     searchResults = [],
     searchQuery = '',
     onViewModeChange,
+    onAddCard,
 }: CardGridProps) {
     const { openCard } = useCardDialog();
+
+    const handleCardClick = (card: BackendCard) => {
+        if (isBasicLand(card)) {
+            // Basic lands vão direto para o deck sem abrir dialog
+            if (onAddCard) {
+                onAddCard(card);
+            }
+        } else {
+            // Outras cartas abrem o dialog
+            openCard(card);
+        }
+    };
     const [viewMode, setViewMode] = useState<ViewMode>('deck');
     const [metaCardsByCategory, setMetaCardsByCategory] = useState<MetaCardsByCategory>({});
     const [topCommanders, setTopCommanders] = useState<BackendCard[]>([]);
@@ -104,6 +118,7 @@ function CardGrid({
 
 
     const categoryOrder = [
+      "Basic Lands", // Basic Lands sempre no topo
         'Top Cards',
         'High Synergy Cards',
         'New Cards',
@@ -186,7 +201,7 @@ function CardGrid({
                   <div
                     key={`${card.id}-${index}`}
                     className="relative cursor-pointer z-0"
-                    onClick={() => openCard(card)}
+                    onClick={() => handleCardClick(card)}
                   >
                     {imageUris.normal ? (
                       <div className="relative">
@@ -256,20 +271,21 @@ function CardGrid({
                 {searchResults.map((card, index) => {
                   const imageUris = getImageUris(card);
                   const { inDeck, quantity } = isCardInDeck(card.id);
+                  const isBasic = isBasicLand(card);
                   return (
                     <div
                       key={`${card.id}-${index}`}
                       className="relative cursor-pointer z-0"
-                      onClick={() => openCard(card)}
+                      onClick={() => handleCardClick(card)}
                     >
                       {imageUris.normal ? (
                         <img
                           src={imageUris.normal}
                           alt={card.name}
                           className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${
-                            inDeck
-                            ? 'grayscale contrast-125 brightness-110 border-red-500/50'
-                            : 'border-black-500'
+                            inDeck && !isBasic
+                              ? 'grayscale contrast-125 brightness-110 border-red-500/50'
+                              : 'border-black-500'
                           }`}
                           loading="lazy"
                         />
@@ -366,19 +382,20 @@ function CardGrid({
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                         {cards.map((card, index) => {
                           const imageUris = getImageUris(card);
-                          const { inDeck, quantity } = isCardInDeck(card.id);
+                          const { inDeck } = isCardInDeck(card.id);
+                          const isBasic = isBasicLand(card);
                           return (
                             <div
                               key={`${card.id}-${index}`}
                               className="relative cursor-pointer z-0"
-                              onClick={() => openCard(card)}
+                              onClick={() => handleCardClick(card)}
                             >
                               {imageUris.normal ? (
                                 <img
                                   src={imageUris.normal}
                                   alt={card.name}
                                   className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${
-                                    inDeck
+                                    inDeck && !isBasic
                                       ? 'grayscale contrast-125 brightness-110 border-red-500/50'
                                       : 'border-black-500'
                                   }`}

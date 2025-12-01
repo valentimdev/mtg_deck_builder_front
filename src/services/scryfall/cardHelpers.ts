@@ -42,3 +42,24 @@ export function isCardCompatibleWithCommander(
   return cardColors.every(color => commanderColors.includes(color));
 }
 
+/**
+ * Verifica se uma carta é uma basic land
+ */
+export function isBasicLand(card: BackendCard | null): boolean {
+  if (!card) return false;
+
+  const basicLandNames = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'];
+  const isBasicLandByName = basicLandNames.includes(card.name);
+  const isBasicLandByType = card.type_line?.toLowerCase().includes('basic land') || false;
+
+  return isBasicLandByName || isBasicLandByType;
+}
+
+/**
+ * Verifica se uma carta é um terreno (land)
+ */
+export function isLand(card: BackendCard | null): boolean {
+  if (!card) return false;
+  return card.type_line?.toLowerCase().includes('land') || false;
+}
+

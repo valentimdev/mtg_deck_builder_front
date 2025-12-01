@@ -65,9 +65,16 @@ const api = {
     },
 
     post: <T>(endpoint: string, data?: any, config?: { responseType?: 'blob', headers?: Record<string, string> }): Promise<T> => {
+        // Se for FormData, não faz JSON.stringify
+        const body = data instanceof FormData
+            ? data
+            : typeof data === 'string'
+                ? data
+                : JSON.stringify(data);
+
         return request<T>(endpoint, {
             method: 'POST',
-            body: typeof data === 'string' ? data : JSON.stringify(data),
+            body,
             ...config,
         });
     },

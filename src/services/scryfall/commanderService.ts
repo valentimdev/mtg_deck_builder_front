@@ -29,7 +29,41 @@ export class CommanderService {
       );
 
       if (!response.ok) {
-        throw new Error(`Erro ao buscar categorias: ${response.statusText}`);
+        // Tenta extrair as categorias disponíveis da mensagem de erro
+        try {
+          const errorData = await response.json();
+          if (errorData.detail && typeof errorData.detail === 'string') {
+            // Procura por padrões como "Available categories: ..." na mensagem
+            // Exemplo: "Category 'None' not found. Available categories: New Cards, High Synergy Cards, ..."
+            const match = errorData.detail.match(/Available categories?:\s*(.+?)(?:\s*$|\.)/i);
+            if (match && match[1]) {
+              // Divide por vírgula e limpa os espaços
+              const categories = match[1].split(',').map(cat => cat.trim()).filter(cat => cat.length > 0);
+              if (categories.length > 0) {
+                console.log('Categorias extraídas do erro:', categories);
+                return categories;
+              }
+            }
+            // Tenta outro padrão: lista entre colchetes ou parênteses
+            const bracketMatch = errorData.detail.match(/\[([^\]]+)\]/);
+            if (bracketMatch && bracketMatch[1]) {
+              const categories = bracketMatch[1].split(',').map(cat => cat.trim()).filter(cat => cat.length > 0);
+              if (categories.length > 0) {
+                return categories;
+              }
+            }
+          }
+          // Se a resposta tiver available_categories diretamente
+          if (errorData.available_categories && Array.isArray(errorData.available_categories)) {
+            return errorData.available_categories;
+          }
+        } catch (parseError) {
+          // Se não conseguir parsear o JSON, continua com o erro original
+          console.warn('Não foi possível parsear a resposta de erro:', parseError);
+        }
+        // Se chegou aqui, não conseguiu extrair as categorias
+        console.warn(`Erro ao buscar categorias (${response.status}): ${response.statusText}`);
+        return [];
       }
 
       const data: CommanderMetaResponse = await response.json();

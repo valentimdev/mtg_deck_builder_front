@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { DeckItem } from '../types/deck';
 import { useCardDialog } from '@/contexts/CardDialogContext';
-import { getImageUris, isCardCompatibleWithCommander } from '@/services/scryfall';
+import { getImageUris, isCardCompatibleWithCommander, isLand } from '@/services/scryfall';
+import type { ScryfallCard } from '@/services/scryfall';
 
 interface DeckListProps {
   commander: DeckItem | null;
@@ -10,6 +11,7 @@ interface DeckListProps {
   error: string | null;
   totalCards: number;
   removeDeckItem: (index: number) => void;
+  onAddCard?: (card: ScryfallCard) => void;
 }
 
 function DeckList({
@@ -19,6 +21,7 @@ function DeckList({
   error: deckError,
   totalCards,
   removeDeckItem,
+  onAddCard,
 }: DeckListProps) {
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -79,6 +82,8 @@ function DeckList({
                     backgroundSize: 'cover',
                     backgroundPosition: 'top',
                     backgroundRepeat: 'no-repeat',
+                    minHeight: '60px',
+                    height: '60px',
                   }}
                   onMouseEnter={() => {
                     if (commander.card?.id) {
@@ -211,16 +216,30 @@ function DeckList({
                 )}
               </div>
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  removeDeckItem(index);
-                }}
-                className="rounded text-sm font-bold "
-                title="Remover carta"
-              >
-                &times;
-              </button>
+              <div className="flex items-center gap-2">
+                {isLand(deckItem.card) && onAddCard && deckItem.card && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddCard(deckItem.card!);
+                    }}
+                    className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded text-sm"
+                    title="Adicionar mais uma cópia"
+                  >
+                    +
+                  </button>
+                )}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeDeckItem(index);
+                  }}
+                  className="rounded text-sm font-bold "
+                  title="Remover carta"
+                >
+                  &times;
+                </button>
+              </div>
 
               {hoveredCardId === deckItem.card?.id &&
                 imageUris?.normal &&

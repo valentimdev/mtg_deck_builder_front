@@ -102,7 +102,10 @@ export function CardDialogProvider({
               {/* Botões de ação */}
               <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-2">
                 <p className="text-center">
-                  {selectedCard.price ? `Preço: R$ ${selectedCard.price}` : 'Preço: N/A'}
+                  {selectedCard.price ? (() => {
+                    const priceNum = parseFloat(selectedCard.price);
+                    return `Preço: R$ ${isNaN(priceNum) ? selectedCard.price : priceNum.toFixed(2)}`;
+                  })() : 'Preço: N/A'}
                 </p>
                 {showAddAsCommander && (
                   <button
