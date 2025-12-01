@@ -1,6 +1,6 @@
 import type { BackendCard } from './types';
 
-const BACKEND_API_BASE = 'http://0.0.0.0:3839';
+const BACKEND_API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3839';
 
 export interface CommanderMetaResponse {
   commander: string;

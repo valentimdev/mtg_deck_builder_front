@@ -64,21 +64,10 @@ export function useDeck(): DeckContextValue {
     setError(null);
 
     try {
-      // Para testar com deck vazio, você pode:
-      // 1. Deletar todos os decks no backend, ou
-      // 2. Modificar a linha abaixo para sempre criar um novo deck
-      const FORCE_NEW_DECK = true; // Mude para true para sempre criar um deck vazio
-
+      // Tenta primeiro listar os decks disponíveis
       let deckId: number;
 
-      if (FORCE_NEW_DECK) {
-        // Sempre cria um novo deck vazio (útil para testes)
-        const newDeck = await DeckService.create({
-          name: `Deck ${Date.now()}`,
-        });
-        deckId = newDeck.id;
-      } else {
-        // Tenta listar os decks disponíveis
+      try {
         const deckList = await DeckService.getAll();
 
         if (deckList.decks && deckList.decks.length > 0) {
@@ -89,6 +78,13 @@ export function useDeck(): DeckContextValue {
           const newDeck = await DeckService.create({ name: 'Meu Deck' });
           deckId = newDeck.id;
         }
+      } catch (listError) {
+        // Se falhar ao listar, tenta criar um novo deck
+        console.warn('Erro ao listar decks, criando novo deck:', listError);
+        const newDeck = await DeckService.create({
+          name: `Deck ${Date.now()}`
+        });
+        deckId = newDeck.id;
       }
 
       setCurrentDeckId(deckId);

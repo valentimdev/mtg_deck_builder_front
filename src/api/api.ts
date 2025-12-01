@@ -1,23 +1,28 @@
 // Usa a variável de ambiente ou o valor padrão do backend
-const BACKEND_API_BASE = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3839';
+const BACKEND_API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3839';
 const BASE_URL = `${BACKEND_API_BASE}/api`;
 
 // Função helper para fazer requisições com fetch
+interface RequestOptions extends RequestInit {
+    responseType?: 'blob';
+}
+
 async function request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestOptions = {}
 ): Promise<T> {
     const url = `${BASE_URL}${endpoint}`;
+    const { responseType, ...fetchOptions } = options;
 
     const headers = {
         "x-api-key": import.meta.env.VITE_API_KEY || "",
         "x-client-id": import.meta.env.VITE_CLIENT_ID || "",
         "Content-Type": "application/json",
-        ...options.headers,
+        ...fetchOptions.headers,
     };
 
     const response = await fetch(url, {
-        ...options,
+        ...fetchOptions,
         headers,
     });
 
@@ -38,7 +43,7 @@ async function request<T>(
     }
 
     // Se a resposta for um blob (para exportações), retorna o blob
-    if (options.responseType === 'blob' || response.headers.get('content-type')?.includes('application/octet-stream')) {
+    if (responseType === 'blob' || response.headers.get('content-type')?.includes('application/octet-stream')) {
         return response.blob() as Promise<T>;
     }
 
