@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { DeckItem } from '../types/deck';
 import { useCardDialog } from '@/contexts/CardDialogContext';
-import { getImageUris, isCardCompatibleWithCommander, isLand } from '@/services/scryfall';
+import { getImageUris, isCardCompatibleWithCommander, isBasicLand } from '@/services/scryfall';
 import type { ScryfallCard } from '@/services/scryfall';
 
 interface DeckListProps {
@@ -25,9 +25,125 @@ function DeckList({
 }: DeckListProps) {
   const [hoveredCardId, setHoveredCardId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showIncompatibleTooltip, setShowIncompatibleTooltip] = useState(false);
+  const [showTooManyCardsTooltip, setShowTooManyCardsTooltip] = useState(false);
   const { openCard } = useCardDialog();
   const handleMouseMove = (e: React.MouseEvent) => {
     setMousePosition({ x: e.clientX, y: e.clientY });
+  };
+
+  // Verifica cartas incompatíveis com o comandante
+  const getIncompatibleCards = () => {
+    if (!commander?.card) return [];
+
+    const incompatible: Array<{ name: string; quantity: number }> = [];
+
+    deckItems.forEach((deckItem) => {
+      if (deckItem.card && !isCardCompatibleWithCommander(deckItem.card, commander.card)) {
+        incompatible.push({
+          name: deckItem.cardName,
+          quantity: deckItem.quantity
+        });
+      }
+    });
+
+    return incompatible;
+  };
+
+  // Calcula o preço total e identifica cartas sem preço
+  const calculateTotalPrice = () => {
+    let total = 0;
+    const cardsWithoutPrice: string[] = [];
+
+    // Adiciona o preço do comandante (se não for basic land)
+    if (commander?.card) {
+      const isCommanderBasicLand = isBasicLand(commander.card);
+      if (!isCommanderBasicLand) {
+        const price = commander.card.price;
+        if (!price || price === 'N/A' || price.trim() === '') {
+          cardsWithoutPrice.push(`${commander.quantity}x ${commander.cardName}`);
+        } else {
+          const priceNum = parseFloat(price);
+          if (!isNaN(priceNum)) {
+            total += priceNum * commander.quantity;
+          } else {
+            cardsWithoutPrice.push(`${commander.quantity}x ${commander.cardName}`);
+          }
+        }
+      }
+    }
+
+    // Adiciona o preço das cartas do deck (se não forem basic lands)
+    deckItems.forEach((deckItem) => {
+      if (deckItem.card) {
+        const isCardBasicLand = isBasicLand(deckItem.card);
+        if (!isCardBasicLand) {
+          const price = deckItem.card.price;
+          if (!price || price === 'N/A' || price.trim() === '') {
+            cardsWithoutPrice.push(`${deckItem.quantity}x ${deckItem.cardName}`);
+          } else {
+            const priceNum = parseFloat(price);
+            if (!isNaN(priceNum)) {
+              total += priceNum * deckItem.quantity;
+            } else {
+              cardsWithoutPrice.push(`${deckItem.quantity}x ${deckItem.cardName}`);
+            }
+          }
+        }
+      }
+    });
+
+    return { total, cardsWithoutPrice };
+  };
+
+  // Calcula estatísticas do deck
+  const calculateDeckStats = () => {
+    let lands = 0;
+    let instants = 0;
+    let sorceries = 0;
+    let enchantments = 0;
+    let creatures = 0;
+    let artifacts = 0;
+
+    // Conta o comandante
+    if (commander?.card) {
+      const typeLine = commander.card.type_line?.toLowerCase() || '';
+      if (typeLine.includes('land')) {
+        lands += commander.quantity;
+      } else if (typeLine.includes('instant')) {
+        instants += commander.quantity;
+      } else if (typeLine.includes('sorcery')) {
+        sorceries += commander.quantity;
+      } else if (typeLine.includes('enchantment')) {
+        enchantments += commander.quantity;
+      } else if (typeLine.includes('creature')) {
+        creatures += commander.quantity;
+      } else if (typeLine.includes('artifact')) {
+        artifacts += commander.quantity;
+      }
+    }
+
+    // Conta as cartas do deck
+    deckItems.forEach((deckItem) => {
+      if (deckItem.card) {
+        const typeLine = deckItem.card.type_line?.toLowerCase() || '';
+        if (typeLine.includes('land')) {
+          lands += deckItem.quantity;
+        } else if (typeLine.includes('instant')) {
+          instants += deckItem.quantity;
+        } else if (typeLine.includes('sorcery')) {
+          sorceries += deckItem.quantity;
+        } else if (typeLine.includes('enchantment')) {
+          enchantments += deckItem.quantity;
+        } else if (typeLine.includes('creature')) {
+          creatures += deckItem.quantity;
+        } else if (typeLine.includes('artifact')) {
+          artifacts += deckItem.quantity;
+        }
+      }
+    });
+
+    return { lands, instants, sorceries, enchantments, creatures, artifacts };
   };
 
   if (deckLoading) {
@@ -59,14 +175,71 @@ function DeckList({
     );
   }
 
+  const incompatibleCards = getIncompatibleCards();
+  const hasIncompatibleCards = incompatibleCards.length > 0;
+  const hasTooManyCards = totalCards > 100;
+
   return (
     <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-2 relative ">
-      <h2 className="text-2xl font-bold text-(--text-dark) mb-4 shrink-0 self-center">
-        Meu Deck ({totalCards})
-      </h2>
+      <div className="flex items-center justify-center gap-2 mb-4 shrink-0 relative">
+        <h2 className="text-2xl font-bold text-(--text-dark)">
+          Meu Deck ({totalCards})
+        </h2>
+        {(hasIncompatibleCards || hasTooManyCards) && (
+          <div
+            className="relative"
+            onMouseEnter={() => {
+              setShowIncompatibleTooltip(true);
+              setShowTooManyCardsTooltip(true);
+            }}
+            onMouseLeave={() => {
+              setShowIncompatibleTooltip(false);
+              setShowTooManyCardsTooltip(false);
+            }}
+          >
+            <span className="text-yellow-400 text-xl cursor-help">⚠️</span>
+            {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
+              <div
+                className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-[#1a1a1f] border-2 border-yellow-500 rounded-lg p-3 z-50 shadow-xl"
+                style={{ minWidth: '250px' }}
+              >
+                <p className="text-yellow-400 font-semibold text-sm mb-2">
+                  ⚠️ Deck não está legal!
+                </p>
+                {hasTooManyCards && (
+                  <p className="text-gray-300 text-xs mb-2">
+                    O deck contém {totalCards} cartas. O limite legal é de 100 cartas (99 + 1 comandante).
+                  </p>
+                )}
+                {hasIncompatibleCards && (
+                  <>
+                    {hasTooManyCards && (
+                      <p className="text-gray-300 text-xs mb-2">
+                        Além disso, o deck contém cartas com cores incompatíveis com o comandante:
+                      </p>
+                    )}
+                    {!hasTooManyCards && (
+                      <p className="text-gray-300 text-xs mb-2">
+                        O deck contém cartas com cores incompatíveis com o comandante:
+                      </p>
+                    )}
+                    <ul className="text-yellow-300 text-xs space-y-1 max-h-32 overflow-y-auto">
+                      {incompatibleCards.map((card, index) => (
+                        <li key={index} className="pl-2">
+                          • {card.quantity}x {card.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-visible pr-1 border border-white">
-        {/* Slot do Comandante */}
+        {/* Slot do Comandante (sempre mostra) */}
         {commander && (
           <div className="mb-4 pb-4 border-b border-gray-600">
             <h3 className="text-sm font-semibold text-[#b896ff] mb-2 uppercase">Comandante</h3>
@@ -217,7 +390,7 @@ function DeckList({
               </div>
 
               <div className="flex items-center gap-2">
-                {isLand(deckItem.card) && onAddCard && deckItem.card && (
+                {isBasicLand(deckItem.card) && onAddCard && deckItem.card && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -287,6 +460,73 @@ function DeckList({
             <p className="text-gray-400 text-center">Deck vazio</p>
           </div>
         )}
+      </div>
+
+      {/* Div de preço total */}
+      <div className="mt-2 pt-2 border-t border-gray-600 bg-[#2a2b2f] shrink-0">
+        {(() => {
+          const { total, cardsWithoutPrice } = calculateTotalPrice();
+          const { lands, instants, sorceries, enchantments, creatures, artifacts } = calculateDeckStats();
+          return (
+            <div className="p-3">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-semibold text-gray-300">Preço Total:</span>
+                <span className="text-lg font-bold text-[#b896ff]">
+                  R$ {total.toFixed(2)}
+                </span>
+              </div>
+
+              {/* Estatísticas do deck */}
+              <div className="grid grid-cols-3 gap-2 mb-2 text-xs">
+                <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
+                  <span className="text-gray-400 mb-1">Terrenos</span>
+                  <span className="text-white font-bold">{lands}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
+                  <span className="text-gray-400 mb-1">Criaturas</span>
+                  <span className="text-white font-bold">{creatures}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
+                  <span className="text-gray-400 mb-1">Encantamentos</span>
+                  <span className="text-white font-bold">{enchantments}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
+                  <span className="text-gray-400 mb-1">Instantâneas</span>
+                  <span className="text-white font-bold">{instants}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
+                  <span className="text-gray-400 mb-1">Feitiços</span>
+                  <span className="text-white font-bold">{sorceries}</span>
+                </div>
+                <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
+                  <span className="text-gray-400 mb-1">Artefatos</span>
+                  <span className="text-white font-bold">{artifacts}</span>
+                </div>
+              </div>
+              {cardsWithoutPrice.length > 0 && (
+                <div className="mt-2 p-2 bg-yellow-900/20 border border-yellow-600/50 rounded">
+                  <p className="text-xs font-semibold text-yellow-400 mb-1">
+                    ⚠️ Cartas sem preço:
+                  </p>
+                  <ul
+                    className="text-xs text-yellow-300 space-y-1 overflow-y-auto pr-1"
+                    style={{
+                      maxHeight: '40px',
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: '#ca8a04 #854d0e'
+                    }}
+                  >
+                    {cardsWithoutPrice.map((cardName, index) => (
+                      <li key={index} className="pl-2 whitespace-nowrap">
+                        • {cardName}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

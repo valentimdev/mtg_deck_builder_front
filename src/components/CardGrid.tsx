@@ -137,10 +137,10 @@ function CardGrid({
   return (
     <div className="h-full flex flex-col bg-[#2a2b2f] relative z-0">
       {/* Tabs para alternar entre visualizações */}
-      <div className="flex flex-row justify-around items-center gap-40 border-b border-gray-600 shrink-0">
+      <div className="flex flex-row items-stretch gap-3 shrink-0">
         <button
           onClick={() => handleViewModeChange('deck')}
-          className={`px-6 py-3 font-semibold transition-colors ${
+          className={`flex-1 px-6 py-4 font-semibold transition-colors ${
             viewMode === 'deck'
               ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
               : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
@@ -150,7 +150,7 @@ function CardGrid({
         </button>
         <button
           onClick={() => handleViewModeChange('search')}
-          className={`px-6 py-3 font-semibold transition-colors ${
+          className={`flex-1 px-6 py-4 font-semibold transition-colors ${
             viewMode === 'search'
               ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
               : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
@@ -160,7 +160,7 @@ function CardGrid({
         </button>
         <button
           onClick={() => handleViewModeChange('meta')}
-          className={`px-6 py-3 font-semibold transition-colors ${
+          className={`flex-1 px-6 py-4 font-semibold transition-colors ${
             viewMode === 'meta'
               ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
               : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
