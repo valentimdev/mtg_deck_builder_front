@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { DeckItem } from '../types/deck';
 import type { BackendCard } from '@/services/scryfall';
 import { useCardDialog } from "@/contexts/CardDialogContext";
@@ -44,6 +44,7 @@ function CardGrid({
     const [metaCardsByCategory, setMetaCardsByCategory] = useState<MetaCardsByCategory>({});
     const [topCommanders, setTopCommanders] = useState<BackendCard[]>([]);
     const [metaLoading, setMetaLoading] = useState(false);
+    const loadingRef = React.useRef(false);
 
     // Sincroniza o viewMode quando recebe novos resultados de busca
     useEffect(() => {
@@ -74,15 +75,23 @@ function CardGrid({
     };
 
     const loadMetaCards = useCallback(async () => {
+        // Evita múltiplas chamadas simultâneas
+        if (loadingRef.current) {
+            return;
+        }
+
+        loadingRef.current = true;
         setMetaLoading(true);
+        // Limpa os dados anteriores para evitar mostrar dados antigos durante o carregamento
+        setMetaCardsByCategory({});
+        setTopCommanders([]);
+
         try {
             if (commander?.cardName) {
-
                 const metaCards = await commanderService.getAllMetaCards(commander.cardName);
                 setMetaCardsByCategory(metaCards);
                 setTopCommanders([]);
             } else {
-
                 const commanders = await commanderService.getTopCommanders();
                 setTopCommanders(commanders);
                 setMetaCardsByCategory({});
@@ -93,6 +102,7 @@ function CardGrid({
             setTopCommanders([]);
         } finally {
             setMetaLoading(false);
+            loadingRef.current = false;
         }
     }, [commander?.cardName]);
 
@@ -102,15 +112,27 @@ function CardGrid({
         if (onViewModeChange) {
             onViewModeChange(mode);
         }
-        if (mode === 'meta' && Object.keys(metaCardsByCategory).length === 0 && topCommanders.length === 0) {
-            loadMetaCards();
+        if (mode === 'meta') {
+            // Se há comandante, sempre carrega o meta do comandante
+            // Se não há comandante, carrega top comandantes apenas se ainda não foram carregados
+            if (commander?.cardName) {
+                loadMetaCards();
+            } else if (topCommanders.length === 0) {
+                loadMetaCards();
+            }
         }
     };
 
 
     useEffect(() => {
-        if (viewMode === 'meta') {
-            loadMetaCards();
+        if (viewMode === 'meta' && !loadingRef.current) {
+            // Se há comandante, sempre recarrega o meta do comandante
+            if (commander?.cardName) {
+                loadMetaCards();
+            } else if (topCommanders.length === 0) {
+                // Se não há comandante, carrega top comandantes apenas se ainda não foram carregados
+                loadMetaCards();
+            }
         }
     }, [viewMode, commander?.cardName, loadMetaCards]);
 
@@ -359,7 +381,11 @@ function CardGrid({
             )
           ) : Object.keys(metaCardsByCategory).length === 0 ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-white">Nenhuma carta meta disponível</p>
+              <p className="text-white">
+                {commander?.cardName
+                  ? 'Nenhuma carta meta disponível para este comandante'
+                  : 'Nenhuma carta meta disponível'}
+              </p>
             </div>
           ) : (
             <div className="space-y-8">

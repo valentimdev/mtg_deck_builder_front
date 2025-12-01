@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DeckService } from '@/services/deckService';
 import { scryfallService } from '@/services/scryfall';
 import type { DeckItem, DeckContextValue } from '../types/deck';
@@ -22,6 +22,7 @@ export function useDeck(initialDeckId?: number | null): DeckContextValue {
   const [deckItems, setDeckItems] = useState<DeckItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const addingCardRef = useRef<Set<string>>(new Set());
 
   // Carrega um deck específico do backend
   const loadDeck = useCallback(async (deckId: number) => {
@@ -171,43 +172,24 @@ export function useDeck(initialDeckId?: number | null): DeckContextValue {
       return;
     }
 
+    // Previne múltiplas adições simultâneas da mesma carta
+    if (addingCardRef.current.has(card.id)) {
+      return;
+    }
+
+    addingCardRef.current.add(card.id);
+
     try {
-      // Verifica se a carta já está no deck (exceto se for commander)
-      const existingIndex = deckItems.findIndex(
-        (item) => item.card?.id === card.id
-      );
+      // O backend ADICIONA a quantidade (não seta), então passamos apenas a quantidade a adicionar
+      await DeckService.addCard(currentDeckId, card.id, quantity);
 
-      if (existingIndex !== -1) {
-        // Se já existe, aumenta a quantidade
-        const existingItem = deckItems[existingIndex];
-        const newQuantity = existingItem.quantity + quantity;
-
-        await DeckService.addCard(currentDeckId, card.id, newQuantity);
-
-        setDeckItems((prev) =>
-          prev.map((item, i) =>
-            i === existingIndex
-              ? { ...item, quantity: newQuantity, card }
-              : item
-          )
-        );
-      } else {
-        // Se não existe, adiciona nova carta
-        await DeckService.addCard(currentDeckId, card.id, quantity);
-
-        const newItem: DeckItem = {
-          quantity,
-          cardName: card.name,
-          card,
-          loading: false,
-          error: null,
-        };
-
-        setDeckItems((prev) => [...prev, newItem]);
-      }
+      // Recarrega o deck completo para garantir sincronização
+      await loadDeck(currentDeckId);
     } catch (err) {
       console.error('Erro ao adicionar carta:', err);
       setError(err instanceof Error ? err.message : 'Erro ao adicionar carta');
+    } finally {
+      addingCardRef.current.delete(card.id);
     }
   };
 

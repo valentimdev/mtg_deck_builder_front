@@ -111,18 +111,27 @@ export class CommanderService {
       }
 
       // Busca as cartas de cada categoria em paralelo
+      // Usa Promise.allSettled para não falhar se uma categoria der erro
       const categoryPromises = categories.map(async (category) => {
-        const cards = await this.getCardsByCategory(commanderName, category);
-        return { category, cards };
+        try {
+          const cards = await this.getCardsByCategory(commanderName, category);
+          return { category, cards, success: true };
+        } catch (error) {
+          console.warn(`Erro ao buscar cartas da categoria ${category}:`, error);
+          return { category, cards: [], success: false };
+        }
       });
 
-      const results = await Promise.all(categoryPromises);
+      const results = await Promise.allSettled(categoryPromises);
 
       // Agrupa por categoria
       const metaCardsByCategory: MetaCardsByCategory = {};
-      results.forEach(({ category, cards }) => {
-        if (cards.length > 0) {
-          metaCardsByCategory[category] = cards;
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          const { category, cards } = result.value;
+          if (cards && cards.length > 0) {
+            metaCardsByCategory[category] = cards;
+          }
         }
       });
 
