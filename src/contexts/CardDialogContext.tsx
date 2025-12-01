@@ -20,9 +20,9 @@ interface CardDialogProviderProps {
 
 const CardDialogContext = createContext<CardDialogContextType | null>(null);
 
-export function CardDialogProvider({ 
-  children, 
-  commander, 
+export function CardDialogProvider({
+  children,
+  commander,
   deckItems,
   onAddCard,
   onAddAsCommander,
@@ -67,7 +67,7 @@ export function CardDialogProvider({
         console.log('isInDeck:', isInDeck);
         console.log('commander?.card?.id:', commander?.card?.id);
         console.log('selectedCard.id:', selectedCard.id);
-        
+
         // Determina quais opções mostrar
         const isLegendaryCreature = selectedCard.type_line?.includes?.('Legendary Creature');
         const canBeCommander = isLegendaryCreature;
@@ -102,8 +102,7 @@ export function CardDialogProvider({
               {/* Botões de ação */}
               <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-2">
                 <p className="text-center">
-                  Preço: {selectedCard.price}
-                  {selectedCard.price ? `R$ ${selectedCard.price}` : 'N/A'}
+                  {selectedCard.price ? `Preço: R$ ${selectedCard.price}` : 'Preço: N/A'}
                 </p>
                 {showAddAsCommander && (
                   <button
@@ -116,7 +115,7 @@ export function CardDialogProvider({
                     Adicionar como Commander
                   </button>
                 )}
-                
+
                 {showAddToDeck && (
                   <button
                     onClick={() => {
