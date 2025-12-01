@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DeckService, type DeckInDB } from '@/services/deckService';
+import { ImportService } from '@/services/importService';
 import DeckCard from './DeckCard';
 
 export default function DeckManagerPage() {
@@ -10,6 +11,8 @@ export default function DeckManagerPage() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   const loadDecks = async () => {
@@ -100,6 +103,50 @@ export default function DeckManagerPage() {
     navigate(`/deck/${deckId}`);
   };
 
+  const handleImportDeck = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    // Verifica se é um arquivo .txt
+    if (!file.name.endsWith('.txt')) {
+      alert('Por favor, selecione um arquivo .txt');
+      return;
+    }
+
+    // Pede o nome do deck
+    const deckName = prompt('Digite o nome para o deck importado:', file.name.replace('.txt', ''));
+    if (!deckName || !deckName.trim()) {
+      return;
+    }
+
+    setImporting(true);
+    try {
+      const importedDeck = await ImportService.importTxt(deckName.trim(), file);
+      // Converte CompleteDeckRead para DeckInDB
+      const deckInDB: DeckInDB = {
+        id: importedDeck.id,
+        name: importedDeck.name,
+        last_update: importedDeck.last_update,
+      };
+      setDecks([...decks, deckInDB]);
+      // Limpa o input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (err) {
+      console.error('Erro ao importar deck:', err);
+      alert(err instanceof Error ? err.message : 'Erro ao importar deck');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-[#1e1f23] text-white">
@@ -137,14 +184,32 @@ export default function DeckManagerPage() {
             <h1 className="text-4xl font-bold text-[#b896ff] mb-2">Meus Decks</h1>
             <p className="text-gray-400">Gerencie seus decks de Commander</p>
           </div>
-          <button
-            onClick={() => setShowCreateDialog(true)}
-            className="px-6 py-3 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
-          >
-            <span>+</span>
-            <span>Criar Novo Deck</span>
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleImportDeck}
+              disabled={importing}
+              className="px-6 py-3 bg-[#4a5568] hover:bg-[#5a6578] text-white font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>{importing ? 'Importando...' : 'Importar Deck'}</span>
+            </button>
+            <button
+              onClick={() => setShowCreateDialog(true)}
+              className="px-6 py-3 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
+            >
+              <span>+</span>
+              <span>Criar Novo Deck</span>
+            </button>
+          </div>
         </div>
+
+        {/* Input de arquivo oculto */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".txt"
+          onChange={handleFileChange}
+          className="hidden"
+        />
 
         {/* Lista de Decks */}
         {decks.length === 0 ? (

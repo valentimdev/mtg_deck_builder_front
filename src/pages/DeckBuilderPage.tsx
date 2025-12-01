@@ -6,6 +6,7 @@ import { useDeck } from '../hooks/useDeck';
 import type { ScryfallCard } from "@/services/scryfall";
 import { CardDialogProvider } from '../contexts/CardDialogContext';
 import { useParams, useNavigate } from 'react-router-dom';
+import { DeckService } from '@/services/deckService';
 
 type ViewMode = 'deck' | 'meta' | 'search';
 
@@ -39,6 +40,30 @@ export default function DeckBuilderPage() {
         navigate('/');
     };
 
+    const handleExportTxt = async () => {
+        if (!deckId) {
+            return;
+        }
+
+        try {
+            // Busca o nome do deck para usar no nome do arquivo
+            const deckData = await DeckService.getById(parseInt(deckId));
+            const blob = await DeckService.exportTxt(parseInt(deckId));
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            // Usa o nome do deck como nome do arquivo
+            a.download = `${deckData.name}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Erro ao exportar deck:', err);
+            alert(err instanceof Error ? err.message : 'Erro ao exportar deck');
+        }
+    };
+
     return (
         <CardDialogProvider
             commander={deckState.commander}
@@ -48,7 +73,7 @@ export default function DeckBuilderPage() {
             onRemoveCard={handleRemoveCard}
         >
         <div className="flex w-full h-full bg-[#2a2b2f]">
-            <div className="h-full w-80 fixed left-0 top-0 bottom-0 z-20">
+            <div className="h-full w-80 fixed left-0 top-0 bottom-0 z-20 border-r border-gray-700">
                 <DeckList
                     commander={deckState.commander}
                     deckItems={deckState.deckItems}
@@ -70,13 +95,22 @@ export default function DeckBuilderPage() {
                             />
                         </div>
                     </div>
-                    {/* Botão de voltar no final à direita */}
-                    <button
-                        onClick={handleBackToDecks}
-                        className="absolute right-4 px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
-                    >
-                        Voltar para Decks
-                    </button>
+                    {/* Botões no final à direita */}
+                    <div className="absolute right-4 flex gap-2">
+                        <button
+                            onClick={handleExportTxt}
+                            className="px-4 py-2 bg-[#4a5568] hover:bg-[#5a6578] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
+                            title="Exportar deck como TXT"
+                        >
+                            Exportar TXT
+                        </button>
+                        <button
+                            onClick={handleBackToDecks}
+                            className="px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
+                        >
+                            Voltar para Decks
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 w-full overflow-hidden">

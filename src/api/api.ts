@@ -14,10 +14,13 @@ async function request<T>(
     const url = `${BASE_URL}${endpoint}`;
     const { responseType, ...fetchOptions } = options;
 
-    const headers = {
+    // Se o body for FormData, não define Content-Type (o navegador faz isso automaticamente com o boundary)
+    const isFormData = fetchOptions.body instanceof FormData;
+
+    const headers: Record<string, string> = {
         "x-api-key": import.meta.env.VITE_API_KEY || "",
         "x-client-id": import.meta.env.VITE_CLIENT_ID || "",
-        "Content-Type": "application/json",
+        ...(isFormData ? {} : { "Content-Type": "application/json" }),
         ...fetchOptions.headers,
     };
 
