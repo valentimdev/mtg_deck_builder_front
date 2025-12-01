@@ -16,8 +16,8 @@ const convertDeckCardToDeckItem = (deckCard: FullDeckCards): DeckItem => ({
   error: null,
 });
 
-export function useDeck(): DeckContextValue {
-  const [currentDeckId, setCurrentDeckId] = useState<number | null>(null);
+export function useDeck(initialDeckId?: number | null): DeckContextValue {
+  const [currentDeckId, setCurrentDeckId] = useState<number | null>(initialDeckId || null);
   const [commander, setCommander] = useState<DeckItem | null>(null);
   const [deckItems, setDeckItems] = useState<DeckItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +60,13 @@ export function useDeck(): DeckContextValue {
 
   // Inicializa ou carrega um deck
   const initializeDeck = useCallback(async () => {
+    // Se já temos um deckId inicial, apenas carrega ele
+    if (initialDeckId) {
+      setCurrentDeckId(initialDeckId);
+      await loadDeck(initialDeckId);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -95,7 +102,7 @@ export function useDeck(): DeckContextValue {
     } finally {
       setLoading(false);
     }
-  }, [loadDeck]);
+  }, [loadDeck, initialDeckId]);
 
   const loadDeckFromTxt = async () => {
     if (currentDeckId) {
@@ -297,6 +304,14 @@ export function useDeck(): DeckContextValue {
   useEffect(() => {
     initializeDeck();
   }, [initializeDeck]);
+
+  // Atualiza o deckId quando o initialDeckId mudar
+  useEffect(() => {
+    if (initialDeckId && initialDeckId !== currentDeckId) {
+      setCurrentDeckId(initialDeckId);
+      loadDeck(initialDeckId);
+    }
+  }, [initialDeckId, currentDeckId, loadDeck]);
 
   return {
     commander,
