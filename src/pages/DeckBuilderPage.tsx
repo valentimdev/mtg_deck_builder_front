@@ -47,15 +47,7 @@ export default function DeckBuilderPage() {
             onAddAsCommander={handleAddAsCommander}
             onRemoveCard={handleRemoveCard}
         >
-        <div className="flex w-full h-full">
-            {/* Botão de voltar */}
-            <button
-                onClick={handleBackToDecks}
-                className="fixed top-4 right-4 z-30 px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors"
-            >
-                Voltar para Decks
-            </button>
-
+        <div className="flex w-full h-full bg-[#2a2b2f]">
             <div className="h-full w-80 fixed left-0 top-0 bottom-0 z-20">
                 <DeckList
                     commander={deckState.commander}
@@ -68,12 +60,23 @@ export default function DeckBuilderPage() {
                 />
             </div>
 
-            <div className="flex flex-col flex-1 h-full ml-80">
-                <div className="w-full h-30 shrink-0">
-                    <SearchBar
-                        onCardSelect={handleAddCard}
-                        onSearch={handleSearch}
-                    />
+            <div className="flex flex-col flex-1 h-full ml-80 bg-[#2a2b2f]">
+                <div className="w-full h-30 shrink-0 flex items-center mt-8 px-4 relative">
+                    <div className="flex-1 flex justify-center">
+                        <div className="max-w-lg w-full">
+                            <SearchBar
+                                onCardSelect={handleAddCard}
+                                onSearch={handleSearch}
+                            />
+                        </div>
+                    </div>
+                    {/* Botão de voltar no final à direita */}
+                    <button
+                        onClick={handleBackToDecks}
+                        className="absolute right-4 px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
+                    >
+                        Voltar para Decks
+                    </button>
                 </div>
 
                 <div className="flex-1 w-full overflow-hidden">

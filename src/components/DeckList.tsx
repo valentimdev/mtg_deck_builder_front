@@ -238,7 +238,7 @@ function DeckList({
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-visible pr-1 border border-white">
+      <div className="flex-1 overflow-y-auto overflow-x-visible pr-1">
         {/* Slot do Comandante (sempre mostra) */}
         {commander && (
           <div className="mb-4 pb-4 border-b border-gray-600">

@@ -77,7 +77,7 @@ function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
     };
 
     return (
-        <div className="relative mt-8 flex flex-col items-center w-full max-w-lg mx-auto">
+        <div className="relative flex flex-col items-center w-full">
             <input
                 type="text"
                 placeholder="Pesquise cards..."

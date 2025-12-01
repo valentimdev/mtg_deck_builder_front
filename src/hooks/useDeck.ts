@@ -180,14 +180,55 @@ export function useDeck(initialDeckId?: number | null): DeckContextValue {
     addingCardRef.current.add(card.id);
 
     try {
+      // Atualiza o estado local otimisticamente primeiro (sem loading)
+      const existingIndex = deckItems.findIndex(
+        (item) => item.card?.id === card.id
+      );
+
+      if (existingIndex !== -1) {
+        // Se já existe, aumenta a quantidade localmente
+        const existingItem = deckItems[existingIndex];
+        const newQuantity = existingItem.quantity + quantity;
+        setDeckItems((prev) =>
+          prev.map((item, i) =>
+            i === existingIndex
+              ? { ...item, quantity: newQuantity, card }
+              : item
+          )
+        );
+      } else {
+        // Se não existe, adiciona nova carta localmente
+        const newItem: DeckItem = {
+          quantity,
+          cardName: card.name,
+          card,
+          loading: false,
+          error: null,
+        };
+        setDeckItems((prev) => [...prev, newItem]);
+      }
+
       // O backend ADICIONA a quantidade (não seta), então passamos apenas a quantidade a adicionar
       await DeckService.addCard(currentDeckId, card.id, quantity);
 
-      // Recarrega o deck completo para garantir sincronização
-      await loadDeck(currentDeckId);
+      // Recarrega silenciosamente o deck para garantir sincronização (sem mostrar loading)
+      const deckData: CompleteDeckRead = await DeckService.getById(currentDeckId);
+      const cards = deckData.cards || [];
+      const commanderCard = cards.find((card) => card.is_commander);
+      const mainDeckCards = cards.filter((card) => !card.is_commander);
+      const commanderItem: DeckItem | null = commanderCard
+        ? convertDeckCardToDeckItem(commanderCard)
+        : null;
+      const deckItemsList: DeckItem[] = mainDeckCards.map(
+        convertDeckCardToDeckItem
+      );
+      setCommander(commanderItem);
+      setDeckItems(deckItemsList);
     } catch (err) {
       console.error('Erro ao adicionar carta:', err);
       setError(err instanceof Error ? err.message : 'Erro ao adicionar carta');
+      // Em caso de erro, recarrega o deck para reverter o estado otimista
+      await loadDeck(currentDeckId);
     } finally {
       addingCardRef.current.delete(card.id);
     }
