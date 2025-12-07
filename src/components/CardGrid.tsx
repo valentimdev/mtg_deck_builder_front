@@ -159,7 +159,7 @@ function CardGrid({
   return (
     <div className="h-full flex flex-col bg-[#2a2b2f] relative z-0">
       {/* Tabs para alternar entre visualizações */}
-      <div className="flex flex-row items-stretch gap-3 shrink-0">
+      <div className="flex flex-row items-stretch gap-3 shrink-0 px-4">
         <button
           onClick={() => handleViewModeChange('deck')}
           className={`flex-1 px-6 py-4 font-semibold transition-colors ${

@@ -407,10 +407,10 @@ function DeckList({
                     e.stopPropagation();
                     removeDeckItem(index);
                   }}
-                  className="rounded text-sm font-bold "
-                  title="Remover carta"
+                  className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-sm"
+                  title={isBasicLand(deckItem.card) ? "Reduzir quantidade" : "Remover carta"}
                 >
-                  &times;
+                  {isBasicLand(deckItem.card) ? '-' : '×'}
                 </button>
               </div>
 
