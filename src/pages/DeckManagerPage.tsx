@@ -25,7 +25,27 @@ export default function DeckManagerPage() {
     setError(null);
     try {
       const response = await DeckService.getAll();
-      setDecks(response.decks || []);
+      
+      // Para cada deck, buscar o commander se existir
+      const decksWithCommanders = await Promise.all(
+        response.decks.map(async (deck) => {
+          try {
+            const commander = await DeckService.getCommander(deck.id);
+            return {
+              ...deck,
+              commander: commander.card ? {
+                id: commander.card.id,
+                name: commander.card.name,
+                art: commander.card.art, // art crop
+              } : undefined,
+            };
+          } catch (err) {
+            return deck;
+          }
+        })
+      );
+      
+      setDecks(decksWithCommanders);
     } catch (err) {
       console.error('Erro ao carregar decks:', err);
       setError(err instanceof Error ? err.message : 'Erro ao carregar decks');
@@ -124,6 +144,7 @@ export default function DeckManagerPage() {
         importDeckName.trim(),
         selectedFile
       );
+      
       const deckInDB: DeckInDB = {
         id: importedDeck.id,
         name: importedDeck.name,

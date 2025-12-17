@@ -6,6 +6,11 @@ export interface DeckInDB {
     id: number;
     name: string;
     last_update: string;
+    commander?: {
+        id: string;
+        name: string;
+        art: string; 
+    };
 }
 
 export interface DeckCreate {
