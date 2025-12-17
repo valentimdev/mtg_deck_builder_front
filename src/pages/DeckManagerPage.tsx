@@ -2,13 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DeckService, type DeckInDB } from '@/services/deckService';
 import { ImportService } from '@/services/importService';
-import DeckCard from './DeckCard';
-
+import DeckCard from '../components/DeckCard';
+import mago from '/mago.mp4';
 export default function DeckManagerPage() {
   const [decks, setDecks] = useState<DeckInDB[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [importDeckName, setImportDeckName] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [newDeckName, setNewDeckName] = useState('');
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -44,8 +49,6 @@ export default function DeckManagerPage() {
       setDecks([...decks, newDeck]);
       setShowCreateDialog(false);
       setNewDeckName('');
-      // Navega para o deck builder com o novo deck
-      navigate(`/deck/${newDeck.id}`);
     } catch (err) {
       console.error('Erro ao criar deck:', err);
       alert(err instanceof Error ? err.message : 'Erro ao criar deck');
@@ -61,7 +64,7 @@ export default function DeckManagerPage() {
 
     try {
       await DeckService.delete(deckId);
-      setDecks(decks.filter(deck => deck.id !== deckId));
+      setDecks(decks.filter((deck) => deck.id !== deckId));
     } catch (err) {
       console.error('Erro ao deletar deck:', err);
       alert(err instanceof Error ? err.message : 'Erro ao deletar deck');
@@ -69,7 +72,10 @@ export default function DeckManagerPage() {
   };
 
   const handleCopyDeck = async (deckId: number, deckName: string) => {
-    const copyName = prompt(`Digite o nome para a cópia de "${deckName}":`, `${deckName} (Cópia)`);
+    const copyName = prompt(
+      `Digite o nome para a cópia de "${deckName}":`,
+      `${deckName} (Cópia)`
+    );
     if (!copyName || !copyName.trim()) {
       return;
     }
@@ -85,14 +91,19 @@ export default function DeckManagerPage() {
   };
 
   const handleRenameDeck = async (deckId: number, currentName: string) => {
-    const newName = prompt(`Digite o novo nome para "${currentName}":`, currentName);
+    const newName = prompt(
+      `Digite o novo nome para "${currentName}":`,
+      currentName
+    );
     if (!newName || !newName.trim() || newName.trim() === currentName) {
       return;
     }
 
     try {
-      const renamedDeck = await DeckService.rename(deckId, { name: newName.trim() });
-      setDecks(decks.map(deck => deck.id === deckId ? renamedDeck : deck));
+      const renamedDeck = await DeckService.rename(deckId, {
+        name: newName.trim(),
+      });
+      setDecks(decks.map((deck) => (deck.id === deckId ? renamedDeck : deck)));
     } catch (err) {
       console.error('Erro ao renomear deck:', err);
       alert(err instanceof Error ? err.message : 'Erro ao renomear deck');
@@ -102,9 +113,58 @@ export default function DeckManagerPage() {
   const handleOpenDeck = (deckId: number) => {
     navigate(`/deck/${deckId}`);
   };
+  const handleConfirmImport = async () => {
+    if (!selectedFile || !importDeckName.trim()) {
+      return;
+    }
 
+    setImporting(true);
+    try {
+      const importedDeck = await ImportService.importTxt(
+        importDeckName.trim(),
+        selectedFile
+      );
+      const deckInDB: DeckInDB = {
+        id: importedDeck.id,
+        name: importedDeck.name,
+        last_update: importedDeck.last_update,
+      };
+      setDecks([...decks, deckInDB]);
+
+      setShowImportDialog(false);
+      setSelectedFile(null);
+      setImportDeckName('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (err) {
+      console.error('Erro ao importar deck:', err);
+
+      // Mostra mensagem personalizada para todos os erros de importação
+      const exampleMessage = `Use o formato padrão de txt de Magic.\n\nExemplo:\n1 Sol Ring\n1 Command Tower\n1 Lightning Bolt\n1 Counterspell\n\nFormato: quantidade (espaço) nome da carta`;
+      setErrorMessage(exampleMessage);
+      setShowErrorDialog(true);
+    } finally {
+      setImporting(false);
+    }
+  };
   const handleImportDeck = () => {
-    fileInputRef.current?.click();
+    setShowImportDialog(true);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!file.name.endsWith('.txt')) {
+      alert('Por favor, selecione um arquivo .txt');
+      return;
+    }
+
+    setSelectedFile(file);
+    setImportDeckName(file.name.replace('.txt', ''));
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,7 +180,10 @@ export default function DeckManagerPage() {
     }
 
     // Pede o nome do deck
-    const deckName = prompt('Digite o nome para o deck importado:', file.name.replace('.txt', ''));
+    const deckName = prompt(
+      'Digite o nome para o deck importado:',
+      file.name.replace('.txt', '')
+    );
     if (!deckName || !deckName.trim()) {
       return;
     }
@@ -179,16 +242,30 @@ export default function DeckManagerPage() {
     <div className="min-h-screen bg-[#1e1f23] text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className=" flex justify-between items-center mb-14">
+          {decks.length > 0 ? (
+            <div>
+              <video
+                src={mago}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-50 h-50"
+              ></video>
+            </div>
+          ) : null}
           <div>
-            <h1 className="text-4xl font-bold text-[#b896ff] mb-2">Meus Decks</h1>
+            <h1 className="text-4xl font-bold text-[#b896ff] mb-2">
+              Meus Decks
+            </h1>
             <p className="text-gray-400">Gerencie seus decks de Commander</p>
           </div>
           <div className="flex gap-3">
             <button
-              onClick={handleImportDeck}
+              onClick={() => setShowImportDialog(true)}
               disabled={importing}
-              className="px-6 py-3 bg-[#4a5568] hover:bg-[#5a6578] text-white font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="focus:ring-offset-0 px-6 py-3 bg-[#4a5568] hover:bg-[#5a6578] text-white font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>{importing ? 'Importando...' : 'Importar Deck'}</span>
             </button>
@@ -214,14 +291,28 @@ export default function DeckManagerPage() {
         {/* Lista de Decks */}
         {decks.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-gray-400 text-xl mb-4">Você ainda não tem decks</p>
-            <p className="text-gray-500 mb-6">Crie seu primeiro deck para começar!</p>
-            <button
+            <div className="flex justify-center items-center">
+              <video
+                src={mago}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-90 h-90"
+              ></video>
+            </div>
+            <p className="text-gray-400 text-xl mb-4">
+              Você ainda não tem decks
+            </p>
+            <p className="text-gray-500 mb-6">
+              Crie seu primeiro deck para começar!
+            </p>
+            {/* <button
               onClick={() => setShowCreateDialog(true)}
               className="px-6 py-3 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
             >
               Criar Primeiro Deck
-            </button>
+            </button> */}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -248,7 +339,9 @@ export default function DeckManagerPage() {
               className="bg-[#2a2b2f] rounded-lg shadow-2xl p-6 max-w-md w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <h2 className="text-2xl font-bold text-[#b896ff] mb-4">Criar Novo Deck</h2>
+              <h2 className="text-2xl font-bold text-[#b896ff] mb-4">
+                Criar Novo Deck
+              </h2>
               <div className="mb-4">
                 <label className="block text-gray-300 mb-2">Nome do Deck</label>
                 <input
@@ -287,8 +380,118 @@ export default function DeckManagerPage() {
             </div>
           </div>
         )}
+        {/* Dialog de Importar */}
+        {showImportDialog && (
+          <div
+            className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-[9999] p-4"
+            onClick={() => {
+              setShowImportDialog(false);
+              setSelectedFile(null);
+              setImportDeckName('');
+            }}
+          >
+            <div
+              className="bg-[#2a2b2f] rounded-lg shadow-2xl p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold text-[#b896ff] mb-4">
+                Importar Deck
+              </h2>
+
+              {/* Input de arquivo */}
+              <div className="mb-4">
+                <label className="block text-gray-300 mb-2">Arquivo .txt</label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt"
+                  onChange={handleFileSelect}
+                  className="w-full px-4 py-2 bg-[#1a1a1f] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#b896ff] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#b896ff] file:text-white hover:file:bg-[#a086ee]"
+                />
+              </div>
+
+              {/* Input de nome do deck */}
+              <div className="mb-4">
+                <label className="block text-gray-300 mb-2">Nome do Deck</label>
+                <input
+                  type="text"
+                  value={importDeckName}
+                  onChange={(e) => setImportDeckName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === 'Enter' &&
+                      selectedFile &&
+                      importDeckName.trim()
+                    ) {
+                      handleConfirmImport();
+                    }
+                  }}
+                  placeholder="Digite o nome do deck"
+                  className="w-full px-4 py-2 bg-[#1a1a1f] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-[#b896ff]"
+                  autoFocus
+                />
+              </div>
+
+              {/* Botões */}
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    setShowImportDialog(false);
+                    setSelectedFile(null);
+                    setImportDeckName('');
+                    if (fileInputRef.current) {
+                      fileInputRef.current.value = '';
+                    }
+                  }}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
+                  disabled={importing}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmImport}
+                  disabled={
+                    !selectedFile || !importDeckName.trim() || importing
+                  }
+                  className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {importing ? 'Importando...' : 'Importar'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Dialog de Erro */}
+        {showErrorDialog && (
+          <div
+            className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-[9999] p-4"
+            onClick={() => setShowErrorDialog(false)}
+          >
+            <div
+              className="bg-[#2a2b2f] rounded-lg shadow-2xl p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold text-red-400 mb-4">
+                Erro ao Importar Deck
+              </h2>
+              <div className="mb-6">
+                <p className="text-gray-300 whitespace-pre-line">
+                  {errorMessage}
+                </p>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowErrorDialog(false)}
+                  className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
+                >
+                  Entendi
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
-
