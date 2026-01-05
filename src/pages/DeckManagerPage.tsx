@@ -4,6 +4,7 @@ import { DeckService, type DeckInDB } from '@/services/deckService';
 import { ImportService } from '@/services/importService';
 import DeckCard from '../components/DeckCard';
 import mago from '/mago.mp4';
+import meusDecks from '/MeusDecksTitulo-01.svg'
 export default function DeckManagerPage() {
   const [decks, setDecks] = useState<DeckInDB[]>([]);
   const [loading, setLoading] = useState(true);
@@ -277,10 +278,13 @@ export default function DeckManagerPage() {
             </div>
           ) : null}
           <div>
-            <h1 className="text-4xl font-bold text-[#b896ff] mb-2">
+          {/* <h1 className="text-4xl font-bold text-[#b896ff] mb-2">
               Meus Decks
-            </h1>
+            </h1> */}
+            <div className="flex flex-col items-center justify-center">
+            <img src={meusDecks} alt="Meus Decks" className="w-110 mb-10" />
             <p className="text-gray-400">Gerencie seus decks de Commander</p>
+            </div>
           </div>
           <div className="flex gap-3">
             <button

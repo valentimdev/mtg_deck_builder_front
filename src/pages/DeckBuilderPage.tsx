@@ -46,13 +46,11 @@ export default function DeckBuilderPage() {
         }
 
         try {
-            // Busca o nome do deck para usar no nome do arquivo
             const deckData = await DeckService.getById(parseInt(deckId));
             const blob = await DeckService.exportTxt(parseInt(deckId));
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            // Usa o nome do deck como nome do arquivo
             a.download = `${deckData.name}.txt`;
             document.body.appendChild(a);
             a.click();
@@ -96,7 +94,7 @@ export default function DeckBuilderPage() {
                         </div>
                     </div>
                     {/* Botões no final à direita */}
-                    <div className="absolute right-4 flex gap-2">
+                    <div className=" flex gap-2">
                         <button
                             onClick={handleExportTxt}
                             className="px-4 py-2 bg-[#4a5568] hover:bg-[#5a6578] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
