@@ -12,14 +12,16 @@ export default function LoadingOverlay({
 
   return (
     <div className={containerClass}>
-      <div className="text-center">
+      <div className="flex flex-col items-center justify-center">
         <video
           src="/load_carregando.webm"
           autoPlay
           loop
           muted
           playsInline
-          className="w-40 h-40 mx-auto mb-4"
+          className="w-75 h-75 object-contain"
+          style={{ maxWidth: '90vw', maxHeight: '90vh' }}
+
         />
       </div>
     </div>

@@ -185,9 +185,9 @@ function CardGrid({
       </div>
 
       {/* Conteúdo do grid */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex h-full overflow-y-auto items-center justify-center">
         {isLoading ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex flex items-center justify-center">
           <LoadingOverlay 
             message={viewMode === 'deck' ? 'Carregando cartas do deck...' : 'Carregando cartas meta...'} 
             fullScreen={false}

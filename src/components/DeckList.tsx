@@ -3,7 +3,7 @@ import type { DeckItem } from '../types/deck';
 import { useCardDialog } from '@/contexts/CardDialogContext';
 import { getImageUris, isCardCompatibleWithCommander, isBasicLand } from '@/services/scryfall';
 import type { ScryfallCard } from '@/services/scryfall';
-import alerta from '/alerta.gif'
+import alerta from '/alerta.webm'
 interface DeckListProps {
   commander: DeckItem | null;
   deckItems: DeckItem[];
@@ -197,7 +197,14 @@ function DeckList({
               setShowTooManyCardsTooltip(false);
             }}
           >
-            <span className="text-yellow-400 text-xl cursor-help"><img src={alerta} className="ml-3 w-12 h-12 -scale-x-100"></img></span>
+              <video 
+                src={alerta} 
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                className="ml-3 w-10 h-10 cursor-help"
+              />
             {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
               <div
                 className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-[#1a1a1f] border-2 border-yellow-500 rounded-lg p-3 z-50 shadow-xl"
