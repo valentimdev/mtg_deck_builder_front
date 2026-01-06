@@ -7,7 +7,6 @@ import type { ScryfallCard } from "@/services/scryfall";
 import { CardDialogProvider } from '../contexts/CardDialogContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import { DeckService } from '@/services/deckService';
-
 type ViewMode = 'deck' | 'meta' | 'search';
 
 export default function DeckBuilderPage() {
@@ -18,6 +17,24 @@ export default function DeckBuilderPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [, setCardGridViewMode] = useState<ViewMode>('deck');
 
+
+
+    if (deckState.error) {
+        return (
+            <div className="flex items-center justify-center h-screen bg-[#2a2b2f]">
+                <div className="text-center">
+                    <p className="text-red-400 text-xl mb-4">Erro ao carregar deck</p>
+                    <p className="text-gray-400 mb-4">{deckState.error}</p>
+                    <button
+                        onClick={() => navigate('/')}
+                        className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
+                    >
+                        Voltar para Decks
+                    </button>
+                </div>
+            </div>
+        );
+    }
     const handleAddCard = (card: ScryfallCard) => {
         deckState.addCardByCard(card, 1);
     };

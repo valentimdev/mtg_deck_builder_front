@@ -197,7 +197,7 @@ function DeckList({
               setShowTooManyCardsTooltip(false);
             }}
           >
-            <span className="text-yellow-400 text-xl cursor-help"><img src={alerta} className="ml-5 w-15 h-15 -scale-x-100"></img></span>
+            <span className="text-yellow-400 text-xl cursor-help"><img src={alerta} className="ml-3 w-12 h-12 -scale-x-100"></img></span>
             {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
               <div
                 className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-[#1a1a1f] border-2 border-yellow-500 rounded-lg p-3 z-50 shadow-xl"
@@ -384,7 +384,6 @@ function DeckList({
                     className="text-yellow-400 text-xs font-semibold bg-yellow-500/20 px-2 py-1 rounded"
                     title="Esta carta tem cores diferentes do seu comandante"
                   >
-                    Cores incompatíveis
                   </span>
                 )}
               </div>
@@ -455,7 +454,7 @@ function DeckList({
           })}
         </ul>
 
-        {deckItems.length === 0 && (
+        {(deckItems.length === 0 && !commander) && (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-400 text-center">Deck vazio</p>
           </div>

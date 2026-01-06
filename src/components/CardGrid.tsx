@@ -4,7 +4,7 @@ import type { BackendCard } from '@/services/scryfall';
 import { useCardDialog } from "@/contexts/CardDialogContext";
 import { getImageUris, isCardCompatibleWithCommander, isBasicLand } from '@/services/scryfall';
 import { commanderService, type MetaCardsByCategory } from '@/services/scryfall/commanderService';
-
+import LoadingOverlay from './LoadingOverlay';
 type ViewMode = 'deck' | 'meta' | 'search';
 
 interface CardGridProps {
@@ -30,15 +30,7 @@ function CardGrid({
     const { openCard } = useCardDialog();
 
     const handleCardClick = (card: BackendCard) => {
-        if (isBasicLand(card)) {
-            // Basic lands vão direto para o deck sem abrir dialog
-            if (onAddCard) {
-                onAddCard(card);
-            }
-        } else {
-            // Outras cartas abrem o dialog
             openCard(card);
-        }
     };
     const [viewMode, setViewMode] = useState<ViewMode>('deck');
     const [metaCardsByCategory, setMetaCardsByCategory] = useState<MetaCardsByCategory>({});
@@ -195,14 +187,12 @@ function CardGrid({
       {/* Conteúdo do grid */}
       <div className="flex-1 overflow-y-auto p-6">
         {isLoading ? (
-          <div className="flex items-center justify-center h-full">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b896ff] mx-auto"></div>
-              <p className="mt-4 text-white">
-                {viewMode === 'deck' ? 'Carregando cartas do deck...' : 'Carregando cartas meta...'}
-              </p>
-            </div>
-          </div>
+        <div className="flex-1 flex items-center justify-center">
+          <LoadingOverlay 
+            message={viewMode === 'deck' ? 'Carregando cartas do deck...' : 'Carregando cartas meta...'} 
+            fullScreen={false}
+          />
+      </div>
         ) : viewMode === 'deck' ? (
           loadedCards.length === 0 ? (
             <div className="flex items-center justify-center h-full">
@@ -237,11 +227,7 @@ function CardGrid({
                           }`}
                           loading="lazy"
                         />
-                        {!isCompatible && (
-                          <div className="absolute top-2 left-2 bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded shadow-lg">
-                            ⚠️
-                          </div>
-                        )}
+
                         {deckItem.quantity > 1 && (
                           <div className="absolute top-2 right-2 bg-[#b896ff] text-white rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm shadow-lg">
                             {deckItem.quantity}
@@ -257,7 +243,7 @@ function CardGrid({
                         <div className="text-center">
                           {!isCompatible && (
                             <div className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded mb-2">
-                              ⚠️ Cores incompatíveis
+                              Cores incompatíveis
                             </div>
                           )}
                           <p className="text-white font-semibold text-sm mb-2">{card.name}</p>

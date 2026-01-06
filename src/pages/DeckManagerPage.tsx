@@ -233,19 +233,12 @@ export default function DeckManagerPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-[#1e1f23] text-white">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#b896ff] mx-auto"></div>
-          <p className="mt-4 text-gray-400">Carregando decks...</p>
-        </div>
-      </div>
-    );
+    return <div/>;
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[#1e1f23] text-white">
+      <div className="flex items-center justify-center h-screen bg-[#1e2024] text-white">
         <div className="text-center">
           <p className="text-red-400 text-xl mb-4">Erro ao carregar decks</p>
           <p className="text-gray-400 mb-4">{error}</p>
@@ -261,7 +254,7 @@ export default function DeckManagerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1e1f23] text-white p-8">
+    <div className="min-h-screen bg-[#1e2024] text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className=" flex justify-between items-center mb-14">
@@ -282,7 +275,7 @@ export default function DeckManagerPage() {
               Meus Decks
             </h1> */}
             <div className="flex flex-col items-center justify-center">
-            <img src={meusDecks} alt="Meus Decks" className="w-110 mb-10" />
+            <img src={meusDecks} alt="Meus Decks" className="w-110 mb-5" />
             <p className="text-gray-400">Gerencie seus decks de Commander</p>
             </div>
           </div>
