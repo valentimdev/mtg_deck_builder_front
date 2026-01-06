@@ -203,7 +203,7 @@ function DeckList({
                 loop 
                 muted 
                 playsInline
-                className="ml-3 w-10 h-10 cursor-help"
+                className="ml-2 w-10 h-10 cursor-help"
               />
             {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
               <div
