@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useMemo } from 'react';
 import type { ScryfallCard } from '@/services/scryfall';
 import type { DeckItem } from '../types/deck';
 import { getImageUris } from '@/services/scryfall';
+import { RefreshButton } from '@/components/RefreshButton';
+import { CardService } from '@/services/cardService';
 
 interface CardDialogContextType {
   selectedCard: ScryfallCard | null;
@@ -29,13 +31,27 @@ export function CardDialogProvider({
   onRemoveCard,
 }: CardDialogProviderProps) {
   const [selectedCard, setSelectedCard] = useState<ScryfallCard | null>(null);
-
+  const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const openCard = (card: ScryfallCard) => {
     setSelectedCard(card);
   };
 
   const closeCard = () => {
     setSelectedCard(null);
+  };
+    const handleUpdatePrices = async () => {
+    if (!selectedCard) return;
+
+    setIsUpdatingPrices(true);
+    try {
+      const updatedCard = await CardService.syncCard(selectedCard.id);
+      setSelectedCard(updatedCard); 
+      
+    } catch (error) {
+      console.error('Erro ao atualizar carta:', error);
+    } finally {
+      setIsUpdatingPrices(false);
+    }
   };
 
   // Determina o estado da carta no deck
@@ -59,14 +75,7 @@ export function CardDialogProvider({
       {selectedCard && cardState && (() => {
         const imageUris = getImageUris(selectedCard);
         const { isCommander, isInDeck, hasCommander } = cardState;
-        console.log('=== DEBUG CARD DIALOG ===');
-        console.log('selectedCard:', selectedCard);
-        console.log('selectedCard.is_commander:', selectedCard.is_commander);
-        console.log('hasCommander:', hasCommander);
-        console.log('isCommander (é o commander atual?):', isCommander);
-        console.log('isInDeck:', isInDeck);
-        console.log('commander?.card?.id:', commander?.card?.id);
-        console.log('selectedCard.id:', selectedCard.id);
+
 
         // Determina quais opções mostrar
         const isLegendaryCreature = selectedCard.type_line?.includes?.('Legendary Creature');
@@ -100,13 +109,22 @@ export function CardDialogProvider({
 
 
               {/* Botões de ação */}
-              <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-2">
+              <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-1">
+                <div className='flex flex-row justify-center gap-1'>
                 <p className="text-center">
                   {selectedCard.price ? (() => {
                     const priceNum = parseFloat(selectedCard.price);
                     return `Preço: R$ ${isNaN(priceNum) ? selectedCard.price : priceNum.toFixed(2)}`;
                   })() : 'Preço: N/A'}
                 </p>
+                <RefreshButton 
+                isLoading={isUpdatingPrices}
+                onClick={handleUpdatePrices}
+                videoSrc="/refresh.webm"
+                className="w-6 h-6" 
+                />
+
+                </div>
                 {showAddAsCommander && (
                   <button
                     onClick={() => {

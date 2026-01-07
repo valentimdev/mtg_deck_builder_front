@@ -29,4 +29,7 @@ export const CardService = {
     removeCardFromDeck: async (deckId: string, cardId: string) => {
         return api.delete<ScryfallCard>(`/deck/${deckId}/card/${cardId}`);
     },
+    syncCard: async (cardId: string) => {
+        return api.post<ScryfallCard>(`/card/sync/${cardId}`);
+    }
 };
