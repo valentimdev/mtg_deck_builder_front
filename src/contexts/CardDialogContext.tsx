@@ -102,14 +102,14 @@ export function CardDialogProvider({
                 <img
                   src={imageUris.normal}
                   alt={selectedCard.name}
-                  className="max-w-full max-h-[60vh] object-contain rounded-lg"
+                  className="max-w-full max-h-[50vh] 2xl:max-h-[56vh] object-contain rounded-lg"
                 />
               </div>
               {/*  Preço da carta */}
 
 
               {/* Botões de ação */}
-              <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-1">
+              <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-0">
                 <div className='flex flex-row justify-center gap-1'>
                 <p className="text-center">
                   {selectedCard.price ? (() => {
@@ -126,14 +126,9 @@ export function CardDialogProvider({
 
 
                 </div>
-                <div className="flex justify-center mt-1">
-                <button
-                      onClick={() => window.open(`https://www.ligamagic.com.br/?view=cards/card&card=${encodeURIComponent(selectedCard.name)}`, '_blank', 'noopener,noreferrer')}
-                      className="px-4 py-2  font-semibold rounded-lg transition-colors"
-                    >
-                      Ver no Liga Magic
-                    </button>
-                </div>
+
+
+
                 {showAddAsCommander && (
                   <button
                     onClick={() => {
@@ -169,7 +164,12 @@ export function CardDialogProvider({
                     {isCommander ? 'Remover Comandante' : 'Remover do Deck'}
                   </button>
                 )}
-
+                  <button
+                      onClick={() => window.open(`https://www.ligamagic.com.br/?view=cards/card&card=${encodeURIComponent(selectedCard.name)}`, '_blank', 'noopener,noreferrer')}
+                      className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
+                    >
+                      Ver no Liga Magic
+                    </button>
                 <button
                   onClick={closeCard}
                   className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"

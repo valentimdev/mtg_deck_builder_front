@@ -267,7 +267,7 @@ export default function DeckManagerPage() {
     <div className="min-h-screen bg-[#1e2024] text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className=" flex justify-between items-center mb-14">
+        <div className=" flex justify-between items-center mb-0 ">
           {decks.length > 0 ? (
             <div>
               <video
@@ -284,8 +284,8 @@ export default function DeckManagerPage() {
           {/* <h1 className="text-4xl font-bold text-[#b896ff] mb-2">
               Meus Decks
             </h1> */}
-            <div className="flex flex-col items-center justify-center">
-            <img src={meusDecks} alt="Meus Decks" className="w-110 mb-5" />
+            <div className="flex flex-col items-center justify-center gap-2">
+            <img src={meusDecks} alt="Meus Decks" className="w-110 mb-" />
             <p className="text-gray-400">Gerencie seus decks de Commander</p>
             </div>
           </div>
