@@ -18,6 +18,8 @@ export default function DeckManagerPage() {
   const [newDeckName, setNewDeckName] = useState('');
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deckToDelete, setDeckToDelete] = useState<{ id: number; name: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
@@ -79,13 +81,21 @@ export default function DeckManagerPage() {
   };
 
   const handleDeleteDeck = async (deckId: number) => {
-    if (!confirm('Tem certeza que deseja deletar este deck?')) {
-      return;
-    }
-
+    const deck = decks.find(d => d.id === deckId);
+    if (!deck) return;
+    
+    setDeckToDelete({ id: deckId, name: deck.name });
+    setShowDeleteDialog(true);
+  };
+  
+  const handleConfirmDelete = async () => {
+    if (!deckToDelete) return;
+  
     try {
-      await DeckService.delete(deckId);
-      setDecks(decks.filter((deck) => deck.id !== deckId));
+      await DeckService.delete(deckToDelete.id);
+      setDecks(decks.filter((deck) => deck.id !== deckToDelete.id));
+      setShowDeleteDialog(false);
+      setDeckToDelete(null);
     } catch (err) {
       console.error('Erro ao deletar deck:', err);
       alert(err instanceof Error ? err.message : 'Erro ao deletar deck');
@@ -504,6 +514,41 @@ export default function DeckManagerPage() {
                   className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
                 >
                   Entendi
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Dialog de Deletar */}
+        {showDeleteDialog && (
+          <div
+            className="fixed inset-0 backdrop-blur-sm bg-black/50 flex items-center justify-center z-[9999] p-4"
+            onClick={() => setShowDeleteDialog(false)}
+          >
+            <div
+              className="bg-[#2a2b2f] rounded-lg shadow-2xl p-6 max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="text-2xl font-bold text-red-400 mb-4">
+                Deletar Deck
+              </h2>
+              <div className="mb-6">
+                <p className="text-gray-300">
+                  Tem certeza que deseja deletar o deck "{deckToDelete?.name}"?
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setShowDeleteDialog(false)}
+                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
+                >
+                  Deletar
                 </button>
               </div>
             </div>
