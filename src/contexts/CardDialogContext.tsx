@@ -114,8 +114,8 @@ export function CardDialogProvider({
                 <p className="text-center">
                   {selectedCard.price ? (() => {
                     const priceNum = parseFloat(selectedCard.price);
-                    return `Preço: R$ ${isNaN(priceNum) ? selectedCard.price : priceNum.toFixed(2)}`;
-                  })() : 'Preço: N/A'}
+                    return `Estimativa de Preço: R$ ${isNaN(priceNum) ? selectedCard.price : priceNum.toFixed(2)}`;
+                  })() : 'Estimativa de Preço: N/A'}
                 </p>
                 <RefreshButton 
                 isLoading={isUpdatingPrices}
@@ -124,6 +124,15 @@ export function CardDialogProvider({
                 className="w-6 h-6" 
                 />
 
+
+                </div>
+                <div className="flex justify-center mt-1">
+                <button
+                      onClick={() => window.open(`https://www.ligamagic.com.br/?view=cards/card&card=${encodeURIComponent(selectedCard.name)}`, '_blank', 'noopener,noreferrer')}
+                      className="px-4 py-2  font-semibold rounded-lg transition-colors"
+                    >
+                      Ver no Liga Magic
+                    </button>
                 </div>
                 {showAddAsCommander && (
                   <button
