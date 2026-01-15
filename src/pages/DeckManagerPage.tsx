@@ -267,7 +267,7 @@ export default function DeckManagerPage() {
     <div className="min-h-screen bg-[#1e2024] text-white p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className=" flex justify-between items-center mb-0 ">
+        <div className=" flex justify-between items-center mb-10 ">
           {decks.length > 0 ? (
             <div>
               <video
