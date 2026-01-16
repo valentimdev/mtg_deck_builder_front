@@ -180,31 +180,32 @@ function DeckList({
   const hasTooManyCards = totalCards > 100;
 
   return (
-    <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-2 relative ">
-      <div className="flex items-center justify-center gap-2 mb-4 shrink-0 relative">
-        <h2 className="text-2xl font-bold text-(--text-dark)">
-          Meu Deck ({totalCards})
-        </h2>
-        {(hasIncompatibleCards || hasTooManyCards) && (
-          <div
-            className="relative"
-            onMouseEnter={() => {
-              setShowIncompatibleTooltip(true);
-              setShowTooManyCardsTooltip(true);
-            }}
-            onMouseLeave={() => {
-              setShowIncompatibleTooltip(false);
-              setShowTooManyCardsTooltip(false);
-            }}
-          >
-              <video 
-                src={alerta} 
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-                className="ml-2 w-10 h-10 cursor-help"
-              />
+    <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-4 relative ">
+      <div className="flex items-center justify-center gap-2 mb-6 shrink-0 relative">
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-(--text-dark) ">
+            Meu Deck ({totalCards})
+          </h2>
+          {(hasIncompatibleCards || hasTooManyCards) && (
+            <div
+              className="relative flex items-center"
+              onMouseEnter={() => {
+                setShowIncompatibleTooltip(true);
+                setShowTooManyCardsTooltip(true);
+              }}
+              onMouseLeave={() => {
+                setShowIncompatibleTooltip(false);
+                setShowTooManyCardsTooltip(false);
+              }}
+            >
+                <video
+                  src={alerta}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-9 h-9 cursor-help object-contain"
+                />
             {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
               <div
                 className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-[#1a1a1f] border-2 border-yellow-500 rounded-lg p-3 z-50 shadow-xl"
@@ -241,15 +242,16 @@ function DeckList({
                 )}
               </div>
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto overflow-x-visible pr-1">
+      <div className="flex-1 overflow-y-auto overflow-x-visible pr-2 min-h-0">
         {/* Slot do Comandante (sempre mostra) */}
         {commander && (
-          <div className="mb-4 pb-4 border-b border-gray-600">
-            <h3 className="text-sm font-semibold text-[#b896ff] mb-2 uppercase">Comandante</h3>
+          <div className="mb-6 pb-6 border-b border-gray-600">
+            <h3 className="text-sm font-semibold text-[#b896ff] mb-3 uppercase">Comandante</h3>
             {(() => {
               const imageUris = commander.card ? getImageUris(commander.card) : null;
               return (
@@ -338,14 +340,14 @@ function DeckList({
         )}
 
         {/* Deck Principal */}
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {deckItems.map((deckItem, index) => {
             const imageUris = deckItem.card ? getImageUris(deckItem.card) : null;
             const isCompatible = isCardCompatibleWithCommander(deckItem.card, commander?.card || null);
             return (
             <li
               key={`${deckItem.cardName}-${index}`}
-              className={`relative flex justify-between items-center p-3 bg-[#3a3b3f] rounded-lg cursor-pointer overflow-visible ${
+              className={`relative flex justify-between items-center p-4 bg-[#3a3b3f] rounded-lg cursor-pointer overflow-visible ${
                 isCompatible
                   ? 'border border-gray-500'
                   : 'border-2 border-yellow-500 bg-yellow-900/20'
@@ -469,13 +471,13 @@ function DeckList({
       </div>
 
       {/* Div de preço total */}
-      <div className="mt-2 pt-2 border-t border-gray-600 bg-[#2a2b2f] shrink-0">
+      <div className="mt-4 pt-4 border-t border-gray-600 bg-[#2a2b2f] shrink-0">
         {(() => {
           const { total, cardsWithoutPrice } = calculateTotalPrice();
           const { lands, instants, sorceries, enchantments, creatures, artifacts } = calculateDeckStats();
           return (
-            <div className="p-3">
-              <div className="flex justify-between items-center mb-2">
+            <div className="p-4">
+              <div className="flex justify-between items-center mb-4">
                 <span className="text-sm font-semibold text-gray-300">Preço Total:</span>
                 <span className="text-lg font-bold text-[#b896ff]">
                   R$ {total.toFixed(2)}
@@ -483,7 +485,7 @@ function DeckList({
               </div>
 
               {/* Estatísticas do deck */}
-              <div className="grid grid-cols-3 gap-2 mb-2 text-xs">
+              <div className="grid grid-cols-3 gap-3 mb-3 text-xs">
                 <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
                   <span className="text-gray-400 mb-1">Terrenos</span>
                   <span className="text-white font-bold">{lands}</span>

@@ -33,15 +33,16 @@ function CardGrid({
             openCard(card);
     };
     const [viewMode, setViewMode] = useState<ViewMode>('deck');
+    const viewModeRef = React.useRef<ViewMode>('deck');
     const [metaCardsByCategory, setMetaCardsByCategory] = useState<MetaCardsByCategory>({});
     const [topCommanders, setTopCommanders] = useState<BackendCard[]>([]);
     const [metaLoading, setMetaLoading] = useState(false);
     const loadingRef = React.useRef(false);
 
-    // Sincroniza o viewMode quando recebe novos resultados de busca
     useEffect(() => {
         if (searchResults.length > 0 && searchQuery) {
             setViewMode('search');
+            viewModeRef.current = 'search';
             if (onViewModeChange) {
                 onViewModeChange('search');
             }
@@ -67,14 +68,12 @@ function CardGrid({
     };
 
     const loadMetaCards = useCallback(async () => {
-        // Evita múltiplas chamadas simultâneas
         if (loadingRef.current) {
             return;
         }
 
         loadingRef.current = true;
         setMetaLoading(true);
-        // Limpa os dados anteriores para evitar mostrar dados antigos durante o carregamento
         setMetaCardsByCategory({});
         setTopCommanders([]);
 
@@ -83,10 +82,12 @@ function CardGrid({
                 const metaCards = await commanderService.getAllMetaCards(commander.cardName);
                 setMetaCardsByCategory(metaCards);
                 setTopCommanders([]);
+                loadedCommanderRef.current = commander.cardName;
             } else {
                 const commanders = await commanderService.getTopCommanders();
                 setTopCommanders(commanders);
                 setMetaCardsByCategory({});
+                hasLoadedTopCommandersRef.current = true;
             }
         } catch (error) {
             console.error('Erro ao carregar meta cards:', error);
@@ -99,17 +100,23 @@ function CardGrid({
     }, [commander?.cardName]);
 
 
+
+    const loadedCommanderRef = React.useRef<string | null>(null);
+    const hasLoadedTopCommandersRef = React.useRef(false);
+
     const handleViewModeChange = (mode: ViewMode) => {
         setViewMode(mode);
+        viewModeRef.current = mode;
         if (onViewModeChange) {
             onViewModeChange(mode);
         }
         if (mode === 'meta') {
-            // Se há comandante, sempre carrega o meta do comandante
-            // Se não há comandante, carrega top comandantes apenas se ainda não foram carregados
-            if (commander?.cardName) {
-                loadMetaCards();
-            } else if (topCommanders.length === 0) {
+            const currentCommanderName = commander?.cardName || null;
+            const needsReload =
+                (commander?.cardName && loadedCommanderRef.current !== currentCommanderName) ||
+                (!commander?.cardName && !hasLoadedTopCommandersRef.current);
+
+            if (needsReload && !loadingRef.current) {
                 loadMetaCards();
             }
         }
@@ -117,16 +124,14 @@ function CardGrid({
 
 
     useEffect(() => {
-        if (viewMode === 'meta' && !loadingRef.current) {
-            // Se há comandante, sempre recarrega o meta do comandante
-            if (commander?.cardName) {
-                loadMetaCards();
-            } else if (topCommanders.length === 0) {
-                // Se não há comandante, carrega top comandantes apenas se ainda não foram carregados
+        if (viewModeRef.current === 'meta' && !loadingRef.current) {
+            const currentCommanderName = commander?.cardName || null;
+            if (loadedCommanderRef.current !== currentCommanderName) {
                 loadMetaCards();
             }
         }
-    }, [viewMode, commander?.cardName, loadMetaCards]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [commander?.cardName]);
 
     const isLoading = viewMode === 'deck' ? loading : viewMode === 'meta' ? metaLoading : false;
 
@@ -151,7 +156,7 @@ function CardGrid({
   return (
     <div className="h-full flex flex-col bg-[#2a2b2f] relative z-0">
       {/* Tabs para alternar entre visualizações */}
-      <div className="flex flex-row items-stretch gap-3 shrink-0 px-4">
+      <div className="flex flex-row items-stretch gap-3 shrink-0 px-6 pt-4">
         <button
           onClick={() => handleViewModeChange('deck')}
           className={`flex-1 px-6 py-4 font-semibold transition-colors ${
@@ -185,11 +190,11 @@ function CardGrid({
       </div>
 
       {/* Conteúdo do grid */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6">
         {isLoading ? (
         <div className="flex-1 flex items-center justify-center h-full">
-          <LoadingOverlay 
-            message={viewMode === 'deck' ? 'Carregando cartas do deck...' : 'Carregando cartas meta...'} 
+          <LoadingOverlay
+            message={viewMode === 'deck' ? 'Carregando cartas do deck...' : 'Carregando cartas meta...'}
             fullScreen={false}
           />
       </div>
