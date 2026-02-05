@@ -18,6 +18,7 @@ interface CardDialogProviderProps {
   onAddCard: (card: ScryfallCard) => void;
   onAddAsCommander: (cardId: string) => void;
   onRemoveCard: (cardId: string) => void;
+  onUpdateCard?: (card: ScryfallCard) => void;
 }
 
 const CardDialogContext = createContext<CardDialogContextType | null>(null);
@@ -29,6 +30,7 @@ export function CardDialogProvider({
   onAddCard,
   onAddAsCommander,
   onRemoveCard,
+  onUpdateCard,
 }: CardDialogProviderProps) {
   const [selectedCard, setSelectedCard] = useState<ScryfallCard | null>(null);
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
@@ -46,6 +48,9 @@ export function CardDialogProvider({
     try {
       const updatedCard = await CardService.syncCardPrice(selectedCard.id);
       setSelectedCard(updatedCard);
+      if (onUpdateCard) {
+        onUpdateCard(updatedCard);
+      }
 
     } catch (error) {
       console.error('Erro ao atualizar carta:', error);

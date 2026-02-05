@@ -5,9 +5,10 @@ import { useCardDialog } from '@/contexts/CardDialogContext';
 interface SearchBarProps {
     onCardSelect: (card: ScryfallCard) => void;
     onSearch?: (query: string, results: ScryfallCard[]) => void;
+    onSearchStart?: (query: string) => void;
 }
 
-function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
+function SearchBar({ onCardSelect, onSearch, onSearchStart }: SearchBarProps) {
     const [query, setQuery] = useState('');
     const [allResults, setAllResults] = useState<ScryfallCard[]>([]);
     const [visibleResults, setVisibleResults] = useState<ScryfallCard[]>([]);
@@ -35,6 +36,9 @@ function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
     async function fetchCards(q: string, triggerSearch = false) {
         try {
             setLoading(true);
+            if (triggerSearch && onSearchStart) {
+                onSearchStart(q);
+            }
             const response = await scryfallService.searchCards(q);
             const cards: ScryfallCard[] = response.data || [];
             setAllResults(cards);
@@ -98,27 +102,27 @@ function SearchBar({ onCardSelect, onSearch }: SearchBarProps) {
                     {visibleResults.map((card) => {
                         const imageUris = getImageUris(card);
                         return (
-                        <div
-                            key={card.id}
-                            className="flex items-center gap-3 p-2 hover:bg-[#3a3b3f] cursor-pointer text-white border-b border-gray-700 last:border-0"
-                            onClick={() => openCard(card)}
-                        >
-                            {imageUris.small ? (
-                                <img
-                                    src={imageUris.small}
-                                    alt={card.name}
-                                    className="w-10 h-14 rounded-md"
-                                />
-                            ) : (
-                                <div className="w-10 h-14 bg-gray-700 rounded-md"></div>
-                            )}
-                            <div className="flex flex-col">
-                                <span className="font-semibold text-(--text-dark)">{card.name}</span>
-                                {card.mana_cost && (
-                                    <span className="text-xs text-gray-400">{card.mana_cost}</span>
+                            <div
+                                key={card.id}
+                                className="flex items-center gap-3 p-2 hover:bg-[#3a3b3f] cursor-pointer text-white border-b border-gray-700 last:border-0"
+                                onClick={() => openCard(card)}
+                            >
+                                {imageUris.small ? (
+                                    <img
+                                        src={imageUris.small}
+                                        alt={card.name}
+                                        className="w-10 h-14 rounded-md"
+                                    />
+                                ) : (
+                                    <div className="w-10 h-14 bg-gray-700 rounded-md"></div>
                                 )}
+                                <div className="flex flex-col">
+                                    <span className="font-semibold text-(--text-dark)">{card.name}</span>
+                                    {card.mana_cost && (
+                                        <span className="text-xs text-gray-400">{card.mana_cost}</span>
+                                    )}
+                                </div>
                             </div>
-                        </div>
                         );
                     })}
 

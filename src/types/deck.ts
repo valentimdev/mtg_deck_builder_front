@@ -24,6 +24,7 @@ export interface DeckActions {
   addCardByCard: (card: ScryfallCard, quantity?: number) => Promise<void>;
   addCardAsCommander: (cardId: string) => Promise<void>;
   reloadDeck: () => Promise<void>;
+  updateCard: (card: ScryfallCard) => void;
 }
 
 export type DeckContextValue = DeckState & DeckActions;

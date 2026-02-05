@@ -336,6 +336,24 @@ export function useDeck(initialDeckId?: number | null): DeckContextValue {
     }
   }, [initialDeckId, currentDeckId, loadDeck]);
 
+  const updateCard = (card: BackendCard) => {
+    // Atualiza commander se for a mesma carta
+    if (commander?.card?.id === card.id) {
+      setCommander((prev) =>
+        prev ? { ...prev, card: card, cardName: card.name } : null
+      );
+    }
+
+    // Atualiza em deckItems
+    setDeckItems((prev) =>
+      prev.map((item) =>
+        item.card?.id === card.id
+          ? { ...item, card: card, cardName: card.name }
+          : item
+      )
+    );
+  };
+
   return {
     commander,
     deckItems,
@@ -349,5 +367,6 @@ export function useDeck(initialDeckId?: number | null): DeckContextValue {
     addCardByCard,
     addCardAsCommander,
     reloadDeck: loadDeckFromTxt,
+    updateCard,
   };
 }

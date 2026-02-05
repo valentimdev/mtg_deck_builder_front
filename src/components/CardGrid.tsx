@@ -11,6 +11,7 @@ interface CardGridProps {
   deckItems: DeckItem[];
   commander: DeckItem | null;
   loading?: boolean;
+  searchLoading?: boolean;
   searchResults?: BackendCard[];
   searchQuery?: string;
   onViewModeChange?: (mode: ViewMode) => void;
@@ -19,139 +20,140 @@ interface CardGridProps {
 }
 
 function CardGrid({
-    deckItems,
-    commander,
-    loading = false,
-    searchResults = [],
-    searchQuery = '',
-    onViewModeChange,
-    onAddCard,
+  deckItems,
+  commander,
+  loading = false,
+  searchLoading = false,
+  searchResults = [],
+  searchQuery = '',
+  onViewModeChange,
+  onAddCard,
 }: CardGridProps) {
-    const { openCard } = useCardDialog();
+  const { openCard } = useCardDialog();
 
-    const handleCardClick = (card: BackendCard) => {
-            openCard(card);
-    };
-    const [viewMode, setViewMode] = useState<ViewMode>('deck');
-    const viewModeRef = React.useRef<ViewMode>('deck');
-    const [metaCardsByCategory, setMetaCardsByCategory] = useState<MetaCardsByCategory>({});
-    const [topCommanders, setTopCommanders] = useState<BackendCard[]>([]);
-    const [metaLoading, setMetaLoading] = useState(false);
-    const loadingRef = React.useRef(false);
+  const handleCardClick = (card: BackendCard) => {
+    openCard(card);
+  };
+  const [viewMode, setViewMode] = useState<ViewMode>('deck');
+  const viewModeRef = React.useRef<ViewMode>('deck');
+  const [metaCardsByCategory, setMetaCardsByCategory] = useState<MetaCardsByCategory>({});
+  const [topCommanders, setTopCommanders] = useState<BackendCard[]>([]);
+  const [metaLoading, setMetaLoading] = useState(false);
+  const loadingRef = React.useRef(false);
 
-    useEffect(() => {
-        if (searchResults.length > 0 && searchQuery) {
-            setViewMode('search');
-            viewModeRef.current = 'search';
-            if (onViewModeChange) {
-                onViewModeChange('search');
-            }
-        }
-    }, [searchResults, searchQuery, onViewModeChange]);
-
-    const loadedCards = deckItems.filter(
-        (item) => item.card !== null && !item.loading && !item.error
-    );
-
-
-    const isCardInDeck = (cardId: string): { inDeck: boolean; quantity?: number } => {
-
-      if (commander?.card?.id === cardId) {
-          return { inDeck: true, quantity: commander.quantity };
+  useEffect(() => {
+    if (searchResults.length > 0 && searchQuery) {
+      setViewMode('search');
+      viewModeRef.current = 'search';
+      if (onViewModeChange) {
+        onViewModeChange('search');
       }
+    }
+  }, [searchResults, searchQuery, onViewModeChange]);
 
-      const deckItem = deckItems.find(item => item.card?.id === cardId);
-      if (deckItem) {
-          return { inDeck: true, quantity: deckItem.quantity };
-      }
-      return { inDeck: false };
-    };
+  const loadedCards = deckItems.filter(
+    (item) => item.card !== null && !item.loading && !item.error
+  );
 
-    const loadMetaCards = useCallback(async () => {
-        if (loadingRef.current) {
-            return;
-        }
 
-        loadingRef.current = true;
-        setMetaLoading(true);
-        setMetaCardsByCategory({});
+  const isCardInDeck = (cardId: string): { inDeck: boolean; quantity?: number } => {
+
+    if (commander?.card?.id === cardId) {
+      return { inDeck: true, quantity: commander.quantity };
+    }
+
+    const deckItem = deckItems.find(item => item.card?.id === cardId);
+    if (deckItem) {
+      return { inDeck: true, quantity: deckItem.quantity };
+    }
+    return { inDeck: false };
+  };
+
+  const loadMetaCards = useCallback(async () => {
+    if (loadingRef.current) {
+      return;
+    }
+
+    loadingRef.current = true;
+    setMetaLoading(true);
+    setMetaCardsByCategory({});
+    setTopCommanders([]);
+
+    try {
+      if (commander?.cardName) {
+        const metaCards = await commanderService.getAllMetaCards(commander.cardName);
+        setMetaCardsByCategory(metaCards);
         setTopCommanders([]);
-
-        try {
-            if (commander?.cardName) {
-                const metaCards = await commanderService.getAllMetaCards(commander.cardName);
-                setMetaCardsByCategory(metaCards);
-                setTopCommanders([]);
-                loadedCommanderRef.current = commander.cardName;
-            } else {
-                const commanders = await commanderService.getTopCommanders();
-                setTopCommanders(commanders);
-                setMetaCardsByCategory({});
-                hasLoadedTopCommandersRef.current = true;
-            }
-        } catch (error) {
-            console.error('Erro ao carregar meta cards:', error);
-            setMetaCardsByCategory({});
-            setTopCommanders([]);
-        } finally {
-            setMetaLoading(false);
-            loadingRef.current = false;
-        }
-    }, [commander?.cardName]);
+        loadedCommanderRef.current = commander.cardName;
+      } else {
+        const commanders = await commanderService.getTopCommanders();
+        setTopCommanders(commanders);
+        setMetaCardsByCategory({});
+        hasLoadedTopCommandersRef.current = true;
+      }
+    } catch (error) {
+      console.error('Erro ao carregar meta cards:', error);
+      setMetaCardsByCategory({});
+      setTopCommanders([]);
+    } finally {
+      setMetaLoading(false);
+      loadingRef.current = false;
+    }
+  }, [commander?.cardName]);
 
 
 
-    const loadedCommanderRef = React.useRef<string | null>(null);
-    const hasLoadedTopCommandersRef = React.useRef(false);
+  const loadedCommanderRef = React.useRef<string | null>(null);
+  const hasLoadedTopCommandersRef = React.useRef(false);
 
-    const handleViewModeChange = (mode: ViewMode) => {
-        setViewMode(mode);
-        viewModeRef.current = mode;
-        if (onViewModeChange) {
-            onViewModeChange(mode);
-        }
-        if (mode === 'meta') {
-            const currentCommanderName = commander?.cardName || null;
-            const needsReload =
-                (commander?.cardName && loadedCommanderRef.current !== currentCommanderName) ||
-                (!commander?.cardName && !hasLoadedTopCommandersRef.current);
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    viewModeRef.current = mode;
+    if (onViewModeChange) {
+      onViewModeChange(mode);
+    }
+    if (mode === 'meta') {
+      const currentCommanderName = commander?.cardName || null;
+      const needsReload =
+        (commander?.cardName && loadedCommanderRef.current !== currentCommanderName) ||
+        (!commander?.cardName && !hasLoadedTopCommandersRef.current);
 
-            if (needsReload && !loadingRef.current) {
-                loadMetaCards();
-            }
-        }
-    };
-
-
-    useEffect(() => {
-        if (viewModeRef.current === 'meta' && !loadingRef.current) {
-            const currentCommanderName = commander?.cardName || null;
-            if (loadedCommanderRef.current !== currentCommanderName) {
-                loadMetaCards();
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [commander?.cardName]);
-
-    const isLoading = viewMode === 'deck' ? loading : viewMode === 'meta' ? metaLoading : false;
+      if (needsReload && !loadingRef.current) {
+        loadMetaCards();
+      }
+    }
+  };
 
 
-    const categoryOrder = [
-        "Basic Lands", // Basic Lands sempre no topo
-        'Top Cards',
-        'High Synergy Cards',
-        'New Cards',
-        'Game Changers',
-        'Creatures',
-        'Instants',
-        'Sorceries',
-        'Enchantments',
-        'Planeswalkers',
-        'Utility Artifacts',
-        'Mana Artifacts',
-        'Utility Lands',
-        'Battles',
-    ];
+  useEffect(() => {
+    if (viewModeRef.current === 'meta' && !loadingRef.current) {
+      const currentCommanderName = commander?.cardName || null;
+      if (loadedCommanderRef.current !== currentCommanderName) {
+        loadMetaCards();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commander?.cardName]);
+
+  const isLoading = viewMode === 'deck' ? loading : viewMode === 'meta' ? metaLoading : viewMode === 'search' ? searchLoading : false;
+
+
+  const categoryOrder = [
+    "Basic Lands", // Basic Lands sempre no topo
+    'Top Cards',
+    'High Synergy Cards',
+    'New Cards',
+    'Game Changers',
+    'Creatures',
+    'Instants',
+    'Sorceries',
+    'Enchantments',
+    'Planeswalkers',
+    'Utility Artifacts',
+    'Mana Artifacts',
+    'Utility Lands',
+    'Battles',
+  ];
 
   return (
     <div className="h-full flex flex-col bg-[#2a2b2f] relative z-0">
@@ -159,31 +161,28 @@ function CardGrid({
       <div className="flex flex-row items-stretch gap-3 shrink-0 px-6 pt-4">
         <button
           onClick={() => handleViewModeChange('deck')}
-          className={`flex-1 px-6 py-4 font-semibold transition-colors ${
-            viewMode === 'deck'
-              ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
-              : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
-          }`}
+          className={`flex-1 px-6 py-4 font-semibold transition-colors ${viewMode === 'deck'
+            ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
+            : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
+            }`}
         >
           Meu Deck
         </button>
         <button
           onClick={() => handleViewModeChange('search')}
-          className={`flex-1 px-6 py-4 font-semibold transition-colors ${
-            viewMode === 'search'
-              ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
-              : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
-          }`}
+          className={`flex-1 px-6 py-4 font-semibold transition-colors ${viewMode === 'search'
+            ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
+            : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
+            }`}
         >
           Pesquisa {searchQuery && `(${searchQuery})`}
         </button>
         <button
           onClick={() => handleViewModeChange('meta')}
-          className={`flex-1 px-6 py-4 font-semibold transition-colors ${
-            viewMode === 'meta'
-              ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
-              : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
-          }`}
+          className={`flex-1 px-6 py-4 font-semibold transition-colors ${viewMode === 'meta'
+            ? 'bg-[#3a3b3f] text-white border-b-2 border-[#b896ff]'
+            : 'text-gray-400 hover:text-white hover:bg-[#3a3b3f]'
+            }`}
         >
           Meta
         </button>
@@ -192,12 +191,18 @@ function CardGrid({
       {/* Conteúdo do grid */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {isLoading ? (
-        <div className="flex-1 flex items-center justify-center h-full">
-          <LoadingOverlay
-            message={viewMode === 'deck' ? 'Carregando cartas do deck...' : 'Carregando cartas meta...'}
-            fullScreen={false}
-          />
-      </div>
+          <div className="flex-1 flex items-center justify-center h-full">
+            <LoadingOverlay
+              message={
+                viewMode === 'deck'
+                  ? 'Carregando cartas do deck...'
+                  : viewMode === 'meta'
+                    ? 'Carregando cartas meta...'
+                    : 'Carregando resultados da pesquisa...'
+              }
+              fullScreen={false}
+            />
+          </div>
         ) : viewMode === 'deck' ? (
           loadedCards.length === 0 ? (
             <div className="flex items-center justify-center h-full">
@@ -225,11 +230,10 @@ function CardGrid({
                         <img
                           src={imageUris.normal}
                           alt={card.name}
-                          className={`w-full rounded-lg shadow-lg ${
-                            isCompatible
-                              ? 'border-2 border-gray-600'
-                              : 'border-2 border-yellow-500'
-                          }`}
+                          className={`w-full rounded-lg shadow-lg ${isCompatible
+                            ? 'border-2 border-gray-600'
+                            : 'border-2 border-yellow-500'
+                            }`}
                           loading="lazy"
                         />
 
@@ -240,11 +244,10 @@ function CardGrid({
                         )}
                       </div>
                     ) : (
-                      <div className={`w-full aspect-[63/88] rounded-lg bg-[#3a3b3f] flex items-center justify-center p-4 ${
-                        isCompatible
-                          ? 'border-2 border-gray-600'
-                          : 'border-2 border-yellow-500'
-                      }`}>
+                      <div className={`w-full aspect-[63/88] rounded-lg bg-[#3a3b3f] flex items-center justify-center p-4 ${isCompatible
+                        ? 'border-2 border-gray-600'
+                        : 'border-2 border-yellow-500'
+                        }`}>
                         <div className="text-center">
                           {!isCompatible && (
                             <div className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded mb-2">
@@ -295,11 +298,10 @@ function CardGrid({
                         <img
                           src={imageUris.normal}
                           alt={card.name}
-                          className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${
-                            inDeck && !isBasic
-                              ? 'grayscale contrast-125 brightness-110 border-red-500/50'
-                              : 'border-black-500'
-                          }`}
+                          className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${inDeck && !isBasic
+                            ? 'grayscale contrast-125 brightness-110 border-red-500/50'
+                            : 'border-black-500'
+                            }`}
                           loading="lazy"
                         />
                       ) : (
@@ -411,11 +413,10 @@ function CardGrid({
                                 <img
                                   src={imageUris.normal}
                                   alt={card.name}
-                                  className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${
-                                    inDeck && !isBasic
-                                      ? 'grayscale contrast-125 brightness-110 border-red-500/50'
-                                      : 'border-black-500'
-                                  }`}
+                                  className={`w-full rounded-lg shadow-lg border-2 border-gray-600 ${inDeck && !isBasic
+                                    ? 'grayscale contrast-125 brightness-110 border-red-500/50'
+                                    : 'border-black-500'
+                                    }`}
                                   loading="lazy"
                                 />
                               ) : (

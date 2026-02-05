@@ -181,7 +181,7 @@ function DeckList({
 
   return (
     <div className="flex flex-col h-full bg-[#2a2b2f] text-white p-4 relative ">
-      <div className="flex items-center justify-center gap-2 mb-6 shrink-0 relative">
+      <div className="flex items-center justify-center gap-2 mb-4 shrink-0 relative">
         <div className="flex items-center gap-2">
           <h2 className="text-2xl font-bold text-(--text-dark) ">
             Meu Deck ({totalCards})
@@ -198,50 +198,50 @@ function DeckList({
                 setShowTooManyCardsTooltip(false);
               }}
             >
-                <video
-                  src={alerta}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-9 h-9 cursor-help object-contain"
-                />
-            {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
-              <div
-                className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-[#1a1a1f] border-2 border-yellow-500 rounded-lg p-3 z-50 shadow-xl"
-                style={{ minWidth: '250px' }}
-              >
-                <p className="text-yellow-400 font-semibold text-sm mb-2">
-                   Deck não está legal!
-                </p>
-                {hasTooManyCards && (
-                  <p className="text-gray-300 text-xs mb-2">
-                    O deck contém {totalCards} cartas. O limite legal é de 100 cartas (99 + 1 comandante).
+              <video
+                src={alerta}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-9 h-9 cursor-help object-contain"
+              />
+              {(showIncompatibleTooltip || showTooManyCardsTooltip) && (
+                <div
+                  className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 w-64 bg-[#1a1a1f] border-2 border-yellow-500 rounded-lg p-3 z-50 shadow-xl"
+                  style={{ minWidth: '250px' }}
+                >
+                  <p className="text-yellow-400 font-semibold text-sm mb-2">
+                    Deck não está legal!
                   </p>
-                )}
-                {hasIncompatibleCards && (
-                  <>
-                    {hasTooManyCards && (
-                      <p className="text-gray-300 text-xs mb-2">
-                        Além disso, o deck contém cartas com cores incompatíveis com o comandante:
-                      </p>
-                    )}
-                    {!hasTooManyCards && (
-                      <p className="text-gray-300 text-xs mb-2">
-                        O deck contém cartas com cores incompatíveis com o comandante:
-                      </p>
-                    )}
-                    <ul className="text-yellow-300 text-xs space-y-1 max-h-32">
-                      {incompatibleCards.map((card, index) => (
-                        <li key={index} className="pl-2">
-                          • {card.quantity}x {card.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                )}
-              </div>
-            )}
+                  {hasTooManyCards && (
+                    <p className="text-gray-300 text-xs mb-2">
+                      O deck contém {totalCards} cartas. O limite legal é de 100 cartas (99 + 1 comandante).
+                    </p>
+                  )}
+                  {hasIncompatibleCards && (
+                    <>
+                      {hasTooManyCards && (
+                        <p className="text-gray-300 text-xs mb-2">
+                          Além disso, o deck contém cartas com cores incompatíveis com o comandante:
+                        </p>
+                      )}
+                      {!hasTooManyCards && (
+                        <p className="text-gray-300 text-xs mb-2">
+                          O deck contém cartas com cores incompatíveis com o comandante:
+                        </p>
+                      )}
+                      <ul className="text-yellow-300 text-xs space-y-1 max-h-32">
+                        {incompatibleCards.map((card, index) => (
+                          <li key={index} className="pl-2">
+                            • {card.quantity}x {card.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -250,8 +250,8 @@ function DeckList({
       <div className="flex-1 overflow-y-auto overflow-x-visible pr-2 min-h-0">
         {/* Slot do Comandante (sempre mostra) */}
         {commander && (
-          <div className="mb-6 pb-6 border-b border-gray-600">
-            <h3 className="text-sm font-semibold text-[#b896ff] mb-3 uppercase">Comandante</h3>
+          <div className="mb-2 pb-2 border-b border-gray-600">
+            <h3 className="text-sm font-semibold text-[#b896ff] mb-2 uppercase">Comandante</h3>
             {(() => {
               const imageUris = commander.card ? getImageUris(commander.card) : null;
               return (
@@ -340,125 +340,124 @@ function DeckList({
         )}
 
         {/* Deck Principal */}
-        <ul className="space-y-3">
+        <ul className="space-y-1">
           {deckItems.map((deckItem, index) => {
             const imageUris = deckItem.card ? getImageUris(deckItem.card) : null;
             const isCompatible = isCardCompatibleWithCommander(deckItem.card, commander?.card || null);
             return (
-            <li
-              key={`${deckItem.cardName}-${index}`}
-              className={`relative flex justify-between items-center p-4 bg-[#3a3b3f] rounded-lg cursor-pointer overflow-visible ${
-                isCompatible
+              <li
+                key={`${deckItem.cardName}-${index}`}
+                className={`relative flex justify-between items-center p-2 bg-[#3a3b3f] rounded-lg cursor-pointer overflow-visible ${isCompatible
                   ? 'border border-gray-500'
                   : 'border-2 border-yellow-500 bg-yellow-900/20'
-              }`}
-              style={{
-                backgroundImage: imageUris?.art_crop
-                  ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${imageUris.art_crop})`
-                  : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'top',
-                backgroundRepeat: 'no-repeat',
-              }}
-              onMouseEnter={() => {
-                if (deckItem.card?.id) {
-                  setHoveredCardId(deckItem.card.id);
-                }
-              }}
-              onMouseLeave={() => {
-                setHoveredCardId(null);
-              }}
-              onMouseMove={handleMouseMove}
-              onClick={() => {
-                if (deckItem.card) {
-                  openCard(deckItem.card);
-                }
-              }}
-            >
-              <div className="flex items-center gap-3 flex-1">
-                <span className="text-(--text-dark) font-bold min-w-8">
-                  {deckItem.quantity}x
-                </span>
-                <span className={deckItem.loading ? 'text-gray-400' : ''}>
-                  {deckItem.cardName}
-                </span>
-                {deckItem.loading && (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-(--text-dark)"></div>
-                )}
-                {deckItem.error && (
-                  <span className="text-red-400 text-sm">⚠️</span>
-                )}
-                {!isCompatible && deckItem.card && (
-                  <span
-                    className="text-yellow-400 text-xs font-semibold bg-yellow-500/20 px-2 py-1 rounded"
-                    title="Esta carta tem cores diferentes do seu comandante"
-                  >
+                  }`}
+                style={{
+                  backgroundImage: imageUris?.art_crop
+                    ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${imageUris.art_crop})`
+                    : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'top',
+                  backgroundRepeat: 'no-repeat',
+                }}
+                onMouseEnter={() => {
+                  if (deckItem.card?.id) {
+                    setHoveredCardId(deckItem.card.id);
+                  }
+                }}
+                onMouseLeave={() => {
+                  setHoveredCardId(null);
+                }}
+                onMouseMove={handleMouseMove}
+                onClick={() => {
+                  if (deckItem.card) {
+                    openCard(deckItem.card);
+                  }
+                }}
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <span className="text-(--text-dark) font-bold min-w-8">
+                    {deckItem.quantity}x
                   </span>
-                )}
-              </div>
+                  <span className={deckItem.loading ? 'text-gray-400' : ''}>
+                    {deckItem.cardName}
+                  </span>
+                  {deckItem.loading && (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-(--text-dark)"></div>
+                  )}
+                  {deckItem.error && (
+                    <span className="text-red-400 text-sm">⚠️</span>
+                  )}
+                  {!isCompatible && deckItem.card && (
+                    <span
+                      className="text-yellow-400 text-xs font-semibold px-2 py-1 rounded"
+                      title="Esta carta tem cores diferentes do seu comandante"
+                    >
+                    </span>
+                  )}
+                </div>
 
-              <div className="flex items-center gap-2">
-                {isBasicLand(deckItem.card) && onAddCard && deckItem.card && (
+                <div className="flex items-center gap-2">
+                  {isBasicLand(deckItem.card) && onAddCard && deckItem.card && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAddCard(deckItem.card!);
+                      }}
+                      className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded text-sm"
+                      title="Adicionar mais uma cópia"
+                    >
+                      +
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddCard(deckItem.card!);
+                      removeDeckItem(index);
                     }}
-                    className="px-2 py-1 bg-green-600 hover:bg-green-700 text-white font-bold rounded text-sm"
-                    title="Adicionar mais uma cópia"
+                    className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-sm"
+                    title={isBasicLand(deckItem.card) ? "Reduzir quantidade" : "Remover carta"}
                   >
-                    +
+                    {isBasicLand(deckItem.card) ? '-' : '×'}
                   </button>
-                )}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeDeckItem(index);
-                  }}
-                  className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded text-sm"
-                  title={isBasicLand(deckItem.card) ? "Reduzir quantidade" : "Remover carta"}
-                >
-                  {isBasicLand(deckItem.card) ? '-' : '×'}
-                </button>
-              </div>
+                </div>
 
-              {hoveredCardId === deckItem.card?.id &&
-                imageUris?.normal &&
-                (() => {
-                  const cardWidth = 240;
-                  const cardHeight = cardWidth * 1.4;
-                  const offset = 10;
-                  const viewportHeight = window.innerHeight;
+                {hoveredCardId === deckItem.card?.id &&
+                  imageUris?.normal &&
+                  (() => {
+                    const cardWidth = 240;
+                    const cardHeight = cardWidth * 1.4;
+                    const offset = 10;
+                    const viewportHeight = window.innerHeight;
 
-                  let finalTop = mousePosition.y - cardHeight / 2;
+                    let finalTop = mousePosition.y - cardHeight / 2;
 
-                  if (finalTop < offset) {
-                    finalTop = offset;
-                  }
+                    if (finalTop < offset) {
+                      finalTop = offset;
+                    }
 
-                  if (finalTop + cardHeight + offset > viewportHeight) {
-                    finalTop = viewportHeight - cardHeight - offset;
-                  }
+                    if (finalTop + cardHeight + offset > viewportHeight) {
+                      finalTop = viewportHeight - cardHeight - offset;
+                    }
 
-                  const cardStyle: React.CSSProperties = {
-                    position: 'fixed',
-                    left: mousePosition.x + 10,
-                    top: finalTop,
-                    zIndex: 9999,
-                    pointerEvents: 'none',
-                  };
+                    const cardStyle: React.CSSProperties = {
+                      position: 'fixed',
+                      left: mousePosition.x + 10,
+                      top: finalTop,
+                      zIndex: 9999,
+                      pointerEvents: 'none',
+                    };
 
-                  return (
-                    <div style={cardStyle}>
-                      <img
-                        src={imageUris.normal}
-                        alt={deckItem.card.name}
-                        className="w-60 rounded-lg shadow-2xl"
-                      />
-                    </div>
-                  );
-                })()}
-            </li>
+                    return (
+                      <div style={cardStyle}>
+                        <img
+                          src={imageUris.normal}
+                          alt={deckItem.card.name}
+                          className="w-60 rounded-lg shadow-2xl"
+                        />
+                      </div>
+                    );
+                  })()}
+              </li>
             );
           })}
         </ul>
@@ -495,7 +494,7 @@ function DeckList({
                   <span className="text-white font-bold">{creatures}</span>
                 </div>
                 <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
-                  <span className="text-gray-400 mb-1">Encantamentos</span>
+                  <span className="text-gray-400 mb-1">Encant.</span>
                   <span className="text-white font-bold">{enchantments}</span>
                 </div>
                 <div className="flex flex-col items-center p-2 bg-[#3a3b3f] rounded">
@@ -514,7 +513,7 @@ function DeckList({
               {cardsWithoutPrice.length > 0 && (
                 <div className="mt-2 p-2 bg-yellow-900/20 border border-yellow-600/50 rounded">
                   <p className="text-xs font-semibold text-yellow-400 mb-1">
-                     Cartas sem preço:
+                    Cartas sem preço:
                   </p>
                   <ul
                     className="text-xs text-yellow-300 space-y-1 overflow-y-auto pr-1"
