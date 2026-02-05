@@ -10,7 +10,7 @@ Este é o frontend do **edhelper**, uma ferramenta completa para construção, a
 - **Busca de Cartas**: Pesquisa avançada usando a API do Scryfall
 - **Meta Cards**: Sugestões de cartas populares para comandantes via EDHREC
 - **Validação de Deck**: Verificação de compatibilidade de cores e limite de cartas
-- **Cálculo de Preços**: Valor total do deck em BRL (integração com LigaMagic)
+- **Cálculo de Preços**: Estimativa de valor total do deck em BRL 
 - **Importação/Exportação**: Suporte para arquivos TXT
 - **Estatísticas**: Análise detalhada do deck (terrenos, criaturas, magias, etc.)
 
@@ -104,7 +104,7 @@ Certifique-se de que o backend está rodando antes de iniciar o frontend:
 
 ```bash
 # No diretório do backend
-edhelper start-editor
+python -m edhelper start-editor
 ```
 
 ## 📖 Como Usar
@@ -308,7 +308,6 @@ Se a porta 5173 estiver em uso, o Vite tentará usar a próxima porta disponíve
 
 - **Scryfall** - API de dados de cartas de Magic: The Gathering
 - **EDHREC** - Dados de meta e popularidade de comandantes
-- **LigaMagic** - Preços de cartas no mercado brasileiro
 
 ## ⚠️ Nota Legal
 
