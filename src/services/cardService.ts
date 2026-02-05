@@ -31,5 +31,8 @@ export const CardService = {
     },
     syncCard: async (cardId: string) => {
         return api.post<ScryfallCard>(`/card/sync/${cardId}`);
+    },
+    syncCardPrice: async (cardId: string) => {
+        return api.get<ScryfallCard>(`/cards/sync-price/${cardId}`);
     }
 };

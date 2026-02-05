@@ -132,7 +132,7 @@ function CardGrid({
 
 
     const categoryOrder = [
-      "Basic Lands", // Basic Lands sempre no topo
+        "Basic Lands", // Basic Lands sempre no topo
         'Top Cards',
         'High Synergy Cards',
         'New Cards',

@@ -39,14 +39,14 @@ export function CardDialogProvider({
   const closeCard = () => {
     setSelectedCard(null);
   };
-    const handleUpdatePrices = async () => {
+  const handleUpdatePrices = async () => {
     if (!selectedCard) return;
 
     setIsUpdatingPrices(true);
     try {
-      const updatedCard = await CardService.syncCard(selectedCard.id);
-      setSelectedCard(updatedCard); 
-      
+      const updatedCard = await CardService.syncCardPrice(selectedCard.id);
+      setSelectedCard(updatedCard);
+
     } catch (error) {
       console.error('Erro ao atualizar carta:', error);
     } finally {
@@ -111,18 +111,18 @@ export function CardDialogProvider({
               {/* Botões de ação */}
               <div className="flex-shrink-0 p-4 border-t border-gray-700 flex flex-col gap-0">
                 <div className='flex flex-row justify-center gap-1'>
-                <p className="text-center">
-                  {selectedCard.price ? (() => {
-                    const priceNum = parseFloat(selectedCard.price);
-                    return `Estimativa de Preço: R$ ${isNaN(priceNum) ? selectedCard.price : priceNum.toFixed(2)}`;
-                  })() : 'Estimativa de Preço: N/A'}
-                </p>
-                <RefreshButton 
-                isLoading={isUpdatingPrices}
-                onClick={handleUpdatePrices}
-                videoSrc="/refresh.webm"
-                className="w-6 h-6" 
-                />
+                  <p className="text-center">
+                    {selectedCard.price ? (() => {
+                      const priceNum = parseFloat(selectedCard.price);
+                      return `Estimativa de Preço: R$ ${isNaN(priceNum) ? selectedCard.price : priceNum.toFixed(2)}`;
+                    })() : 'Estimativa de Preço: N/A'}
+                  </p>
+                  <RefreshButton
+                    isLoading={isUpdatingPrices}
+                    onClick={handleUpdatePrices}
+                    videoSrc="/refresh.webm"
+                    className="w-6 h-6"
+                  />
 
 
                 </div>
@@ -164,12 +164,12 @@ export function CardDialogProvider({
                     {isCommander ? 'Remover Comandante' : 'Remover do Deck'}
                   </button>
                 )}
-                  <button
-                      onClick={() => window.open(`https://www.ligamagic.com.br/?view=cards/card&card=${encodeURIComponent(selectedCard.name)}`, '_blank', 'noopener,noreferrer')}
-                      className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
-                    >
-                      Ver no Liga Magic
-                    </button>
+                <button
+                  onClick={() => window.open(`https://www.ligamagic.com.br/?view=cards/card&card=${encodeURIComponent(selectedCard.name)}`, '_blank', 'noopener,noreferrer')}
+                  className="px-4 py-2 bg-[#b896ff] hover:bg-[#a086ee] text-white font-semibold rounded-lg transition-colors"
+                >
+                  Ver no Liga Magic
+                </button>
                 <button
                   onClick={closeCard}
                   className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-lg transition-colors"

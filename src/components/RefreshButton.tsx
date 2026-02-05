@@ -24,10 +24,11 @@ export function RefreshButton({ isLoading, onClick, videoSrc, className = "w-8 h
     <button
       onClick={onClick}
       disabled={isLoading}
-      className={`${className} !outline-none focus:ring-0 flex items-center justify-center !bg-transparent !p-0 !border-0  transition-transform disabled:opacity-50 disabled:cursor-not-allowed`}
+      className={`${className} !outline-none focus:ring-0 flex items-center justify-center !bg-transparent !p-0 !border-0  transition-transform disabled:cursor-not-allowed`}
       title="Atualizar preço"
     >
       <video
+        ref={videoRef}
         src={videoSrc}
         loop
         muted
