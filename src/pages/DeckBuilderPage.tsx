@@ -111,7 +111,7 @@ export default function DeckBuilderPage() {
                         </div>
                     </div>
                     {/* Botões no final à direita */}
-                    <div className=" flex gap-2">
+                    <div className=" flex gap-2 px-2">
                         <button
                             onClick={handleExportTxt}
                             className="px-4 py-2 bg-[#4a5568] hover:bg-[#5a6578] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
@@ -123,7 +123,7 @@ export default function DeckBuilderPage() {
                             onClick={handleBackToDecks}
                             className="px-4 py-2 bg-[#2a2b2f] hover:bg-[#3a3b3f] text-white font-semibold rounded-lg transition-colors border border-gray-600 whitespace-nowrap"
                         >
-                            Voltar para Decks
+                            Voltar para Deck
                         </button>
                     </div>
                 </div>

@@ -1,60 +1,156 @@
-# MTG Deck Builder Front
+# MTG Deck Builder Frontend
 
-Um deck builder para Magic: The Gathering focado no modo de jogo "Commander" que permite carregar, visualizar e gerenciar decks, com o objetivo de calcular o valor total em reais (BRL) usando preços da LigaMagic.
+Um aplicativo web moderno para construção e gerenciamento de decks de **Magic: The Gathering** focado no formato **Commander (EDH)**. Interface React completa que se integra com o backend FastAPI do projeto `edhelper`.
 
-## 🎯 Objetivo
+## 📋 Sobre o Projeto
 
-Este projeto visa criar uma ferramenta completa para:
-- **Visualizar seus decks** de MTG com imagens e informações das cartas
-- **Buscar e adicionar** novas cartas ao deck
-- **Calcular o valor total** do deck em reais (BRL) através da integração com a LigaMagic
-- **Gerenciar coleções** de forma intuitiva e visual
-- **Exportar seus decks** em varios formatos diferentes
+Este é o frontend do **edhelper**, uma ferramenta completa para construção, análise e gerenciamento de decks de Commander. O frontend oferece uma interface visual intuitiva para todas as funcionalidades disponíveis no backend, incluindo:
 
+- **Gerenciamento de Decks**: Criar, editar, renomear, copiar e deletar decks
+- **Busca de Cartas**: Pesquisa avançada usando a API do Scryfall
+- **Meta Cards**: Sugestões de cartas populares para comandantes via EDHREC
+- **Validação de Deck**: Verificação de compatibilidade de cores e limite de cartas
+- **Cálculo de Preços**: Valor total do deck em BRL (integração com LigaMagic)
+- **Importação/Exportação**: Suporte para arquivos TXT
+- **Estatísticas**: Análise detalhada do deck (terrenos, criaturas, magias, etc.)
 
-## 🚀 Como rodar o projeto
+## 🎯 Funcionalidades Principais
 
-### Pré-requisitos
-- Node.js (versão 18 ou superior)
-- npm ou yarn
+### Gerenciamento de Decks
+- ✅ Visualização de todos os decks salvos
+- ✅ Criação de novos decks
+- ✅ Edição e renomeação de decks
+- ✅ Cópia de decks existentes
+- ✅ Exclusão de decks
+- ✅ Importação de decks a partir de arquivos TXT
+- ✅ Exportação de decks em formato TXT (com comandante no topo)
 
-### Instalação
-1. Clone o repositório:
+### Construção de Deck
+- ✅ Adição e remoção de cartas
+- ✅ Definição de comandante
+- ✅ Visualização de imagens das cartas em alta qualidade
+- ✅ Preview de cartas ao passar o mouse
+- ✅ Modal detalhado com informações completas da carta
+- ✅ Botão "+" para adicionar cópias de basic lands rapidamente
+- ✅ Botão "-" para reduzir quantidade de basic lands
+- ✅ Validação de compatibilidade de cores com o comandante
+- ✅ Avisos visuais para decks ilegais (mais de 100 cartas ou cores incompatíveis)
+
+### Busca e Pesquisa
+- ✅ Busca de cartas por nome (autocomplete)
+- ✅ Integração com Scryfall API
+- ✅ Visualização de resultados em grid
+- ✅ Filtro de idioma (português preferencial)
+- ✅ Top 100 comandantes mais populares
+- ✅ Meta cards por comandante (categorias do EDHREC)
+
+### Análise e Estatísticas
+- ✅ Cálculo do preço total do deck (excluindo basic lands)
+- ✅ Identificação de cartas sem preço disponível
+- ✅ Estatísticas detalhadas:
+  - Número de terrenos
+  - Número de criaturas
+  - Número de encantamentos
+  - Número de magias instantâneas
+  - Número de feitiços
+  - Número de artefatos
+- ✅ Contador total de cartas no deck
+
+## 🛠️ Tecnologias
+
+- **React 19** - Biblioteca JavaScript para construção de interfaces
+- **TypeScript** - Tipagem estática para JavaScript
+- **Vite** - Build tool e dev server ultra-rápido
+- **Tailwind CSS 4** - Framework CSS utility-first
+- **React Router DOM 7** - Roteamento para aplicações React
+- **date-fns** - Biblioteca para manipulação de datas
+
+## 📦 Pré-requisitos
+
+- **Node.js** versão 18 ou superior
+- **npm** ou **yarn** como gerenciador de pacotes
+- **Backend edhelper** rodando (veja [README do backend](../mtg-deck/README.md))
+
+## 🚀 Instalação
+
+1. **Clone o repositório** (se ainda não tiver):
 ```bash
-git clone https://github.com/valentimdev/mtg_deck_builder_front.git
-cd mtg-deck-builder-front
+git clone <repository-url>
+cd mtg_project/mtg_deck_builder_front
 ```
 
-2. Instale as dependências:
+2. **Instale as dependências**:
 ```bash
 npm install
 ```
 
-3. Execute o projeto em modo desenvolvimento:
+3. **Configure as variáveis de ambiente** (veja seção [Configuração](#-configuração))
+
+4. **Inicie o servidor de desenvolvimento**:
 ```bash
 npm run dev
 ```
 
-4. Acesse no navegador: `http://localhost:5173`
+5. **Acesse a aplicação**:
+```
+http://localhost:5173
+```
 
-### Scripts disponíveis
-- `npm run dev` - Executa o projeto em modo desenvolvimento
-- `npm run build` - Gera build de produção
-- `npm run preview` - Visualiza o build de produção localmente
-- `npm run lint` - Executa verificação de código
+## ⚙️ Configuração
 
-## 🎮 Como usar
+### Configuração do Backend
 
-### Carregamento inicial
-O projeto aceita a importação de decks através de um arquivo .txt simples, seguindo o formato padrão usado em sites como Moxfield, Archidekt, e TappedOut.
+Certifique-se de que o backend está rodando antes de iniciar o frontend:
 
-O formato básico é [Quantidade] [Nome da Carta], com uma carta por linha.
+```bash
+# No diretório do backend
+edhelper start-editor
+```
 
-Como o projeto é focado em Commander, o importador reconhece seções separadas por comentários (linhas que começam com //) para identificar corretamente o Comandante, o baralho principal (as 99) e o Sideboard (geralmente usado para Companions ou cartas de "Wish").
+## 📖 Como Usar
 
-Exemplo de arquivo .txt para Commander:
+### Gerenciamento de Decks
 
-Exemplo:
+1. **Página Inicial**: Ao acessar a aplicação, você verá a lista de todos os seus decks
+2. **Criar Novo Deck**: Clique em "Criar Novo Deck" e digite o nome
+3. **Importar Deck**: Clique em "Importar Deck" e selecione um arquivo TXT
+4. **Abrir Deck**: Clique em "Abrir" em qualquer deck para editá-lo
+
+### Construção de Deck
+
+1. **Adicionar Comandante**:
+   - Busque a carta desejada
+   - Clique na carta e selecione "Definir como Comandante"
+
+2. **Adicionar Cartas**:
+   - Use a barra de busca para encontrar cartas
+   - Clique em uma carta para adicioná-la ao deck
+   - Para basic lands, use o botão "+" para adicionar mais cópias rapidamente
+
+3. **Remover Cartas**:
+   - Clique no botão "×" para remover uma carta completamente
+   - Para basic lands, use o botão "-" para reduzir a quantidade
+
+4. **Visualizar Cartas**:
+   - Passe o mouse sobre uma carta para ver um preview
+   - Clique em uma carta para ver detalhes completos em um modal
+
+### Abas de Visualização
+
+- **Meu Deck**: Visualiza todas as cartas do seu deck atual
+- **Pesquisa**: Resultados da busca de cartas
+- **Meta**: Cartas populares sugeridas para o seu comandante (via EDHREC)
+
+### Exportar Deck
+
+1. No editor de deck, clique em "Exportar TXT"
+2. O arquivo será baixado com o nome do deck
+3. O comandante aparecerá no topo do arquivo
+
+### Formato de Importação TXT
+
+O arquivo deve seguir o formato padrão usado em sites como Moxfield, Archidekt e TappedOut:
+
 ```
 //Commander
 1 Atraxa, Praetors' Voice
@@ -62,62 +158,139 @@ Exemplo:
 //Main Deck
 1 Sol Ring
 1 Arcane Signet
-1 Swords to Plowshares
-1 Birds of Paradise
-1 Ignoble Hierarch
-1 Rhystic Study
-1 Smothering Tithe
-1 Farewell
-1 Command Tower
-1 Breeding Pool
-1 Hallowed Fountain
-1 Overgrown Tomb
-1 Watery Grave
-1 Temple Garden
-1 Godless Shrine
 5 Forest
 5 Island
-4 Plains
-3 Swamp
+...
 
 //Sideboard
 1 Lutri, the Spellchaser
 ```
 
-### Interface
-- **Sidebar esquerda**: Lista do deck atual com preview das cartas ao passar o mouse
-- **Barra de busca**: Pesquise cartas na base do Scryfall e adicione ao deck
-- **Grid principal**: Visualização em grade das cartas carregadas no deck
-
-### Funcionalidades atuais
-- Carregamento de deck via arquivo de texto
-- Busca de cartas 
-- Visualização com imagens em alta qualidade
-- Adição/remoção de cartas do deck
-- Preview de imagens ao passar o mouse
-- Modal para visualização ampliada das cartas
-- Cálculo automático do valor total do deck
-- Exportação de listas de deck
-
-## 🛠️ Tecnologias
-
-- **Frontend**: React 19 + TypeScript
-- **Styling**: Tailwind CSS
-- **Build**: Vite
-- **APIs**: Scryfall (dados das cartas), LigaMagic (preços - em desenvolvimento)
-
-## 📁 Estrutura do projeto
+## 📁 Estrutura do Projeto
 
 ```
-src/
-├── components/          # Componentes React
-├── contexts/           # Contextos React (estado global)
-├── hooks/              # Hooks customizados
-├── services/           # Integrações com APIs externas
-├── types/              # Definições de tipos TypeScript
-└── data/               # Dados mock para desenvolvimento
+mtg_deck_builder_front/
+├── public/                 # Arquivos estáticos
+│   ├── alerta.webm        # Vídeo de alerta
+│   └── ...
+├── src/
+│   ├── api/               # Cliente API
+│   │   └── api.ts         # Configuração do cliente HTTP
+│   ├── components/        # Componentes React
+│   │   ├── CardGrid.tsx   # Grid de visualização de cartas
+│   │   ├── DeckCard.tsx   # Card de deck na lista
+│   │   ├── DeckList.tsx   # Lista lateral do deck
+│   │   ├── LoadingOverlay.tsx
+│   │   ├── RefreshButton.tsx
+│   │   └── SearchBar.tsx  # Barra de busca
+│   ├── contexts/          # Contextos React
+│   │   ├── CardDialogContext.tsx  # Modal de detalhes da carta
+│   │   └── DeckContext.tsx
+│   ├── hooks/             # Hooks customizados
+│   │   ├── useDeck.ts     # Gerenciamento de estado do deck
+│   │   └── useScryfall.ts
+│   ├── pages/             # Páginas da aplicação
+│   │   ├── DeckBuilderPage.tsx   # Editor de deck
+│   │   └── DeckManagerPage.tsx    # Gerenciador de decks
+│   ├── services/          # Serviços e integrações
+│   │   ├── cardService.ts
+│   │   ├── deckService.ts  # Serviço de decks
+│   │   ├── importService.ts  # Importação de decks
+│   │   └── scryfall/       # Integração com Scryfall
+│   │       ├── cardHelpers.ts
+│   │       ├── commanderService.ts
+│   │       ├── scryfallService.ts
+│   │       └── types.ts
+│   ├── types/             # Definições TypeScript
+│   │   └── deck.ts
+│   ├── App.tsx            # Componente raiz
+│   ├── main.tsx           # Ponto de entrada
+│   └── index.css          # Estilos globais
+├── .env                   # Variáveis de ambiente (criar)
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
+## 🎮 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run dev          # Inicia servidor de desenvolvimento (porta 5173)
+
+## 🔌 Integração com Backend
+
+O frontend se comunica com o backend através de uma API REST. Todas as requisições são feitas através do cliente configurado em `src/api/api.ts`.
+
+### Endpoints Principais
+
+- `GET /api/decks/` - Lista todos os decks
+- `GET /api/decks/{id}` - Busca um deck específico
+- `POST /api/decks/` - Cria um novo deck
+- `PUT /api/decks/{id}` - Atualiza um deck
+- `DELETE /api/decks/{id}` - Deleta um deck
+- `POST /api/decks/{id}/add` - Adiciona carta ao deck
+- `POST /api/decks/{id}/remove` - Remove carta do deck
+- `POST /api/decks/{id}/commander` - Define comandante
+- `GET /api/decks/{id}/txt` - Exporta deck como TXT
+- `POST /api/decks/import-txt` - Importa deck de arquivo TXT
+- `GET /api/card/search` - Busca cartas
+- `GET /api/card/top-commanders` - Top 100 comandantes
+- `GET /api/commander/{name}/meta/all` - Meta cards do comandante
+
+### Autenticação
+
+Todas as requisições incluem headers de autenticação:
+- `x-api-key`: Sua chave de API
+- `x-client-id`: Seu ID de cliente
+
+Essas credenciais são configuradas via variáveis de ambiente.
+
+## ✨ Features Implementadas
+
+### Interface do Usuário
+- ✅ Design moderno e responsivo com Tailwind CSS
+- ✅ Tema escuro consistente
+- ✅ Animações suaves e feedback visual
+- ✅ Tooltips informativos
+- ✅ Modais para detalhes de cartas
+- ✅ Preview de cartas ao hover
+- ✅ Scrollbars customizados
+
+### Funcionalidades de Deck
+- ✅ Validação de compatibilidade de cores
+- ✅ Avisos para decks ilegais (mais de 100 cartas)
+- ✅ Cálculo de preços (excluindo basic lands)
+- ✅ Estatísticas detalhadas do deck
+- ✅ Tratamento especial para basic lands
+- ✅ Comandante sempre visível em seção dedicada
+
+### Performance
+- ✅ Atualizações otimistas de estado
+- ✅ Prevenção de chamadas duplicadas
+- ✅ Debounce na busca de cartas
+- ✅ Lazy loading de imagens
+
+## 🐛 Troubleshooting
+
+### Backend não está respondendo
+
+1. Verifique se o backend está rodando:
+```bash
+curl http://localhost:3839/api/decks/
+```
+
+2. Verifique as variáveis de ambiente no arquivo `.env`
+
+3. Verifique se as credenciais da API estão corretas
+
+### Erro de CORS
+
+Se você encontrar erros de CORS, certifique-se de que o backend está configurado para aceitar requisições do frontend. O backend deve permitir requisições de `http://localhost:5173`.
+
+### Porta já em uso
+
+Se a porta 5173 estiver em uso, o Vite tentará usar a próxima porta disponível. Verifique o console para ver qual porta está sendo usada.
 
 ## 📝 Contribuindo
 
@@ -127,5 +300,22 @@ src/
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
 
+## 📄 Licença
 
-**Nota**: Este projeto não é afiliado à Wizards of the Coast ou à LigaMagic. Magic: The Gathering é uma marca registrada da Wizards of the Coast LLC.
+[Adicione informações de licença aqui]
+
+## 🙏 Agradecimentos
+
+- **Scryfall** - API de dados de cartas de Magic: The Gathering
+- **EDHREC** - Dados de meta e popularidade de comandantes
+- **LigaMagic** - Preços de cartas no mercado brasileiro
+
+## ⚠️ Nota Legal
+
+Este projeto não é afiliado à **Wizards of the Coast** ou à **LigaMagic**.
+
+**Magic: The Gathering** é uma marca registrada da **Wizards of the Coast LLC**.
+
+---
+
+**Desenvolvido com ❤️ para a comunidade de Commander**
